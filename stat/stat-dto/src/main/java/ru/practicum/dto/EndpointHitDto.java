@@ -1,7 +1,9 @@
+package ru.practicum.dto;
+
 import lombok.Data;
 
 @Data
-public class ParamHitDto {
+public class EndpointHitDto {
     private String app;
     private String uri;
     private String ip;
