@@ -1,5 +1,5 @@
 services:
-  stat-server:
+  stats-server:
     build: stat/stat-server
     image: stat-server
     container_name: stat-server
