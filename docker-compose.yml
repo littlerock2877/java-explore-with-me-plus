@@ -47,7 +47,7 @@ services:
     environment:
       - POSTGRES_PASSWORD=password
       - POSTGRES_USER=sa
-      - POSTGRES_DB=evm
+      - POSTGRES_DB=ewm
     healthcheck:
       test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
       timeout: 5s
