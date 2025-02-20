@@ -1,199 +1,720 @@
 {
   "info": {
-    "_postman_id": "7899955b-091e-4d3c-ac65-d953bcc268c7",
+    "_postman_id": "e64a788e-6eda-457f-809c-9ba1de59ebc8",
     "name": "Test Explore With Me - Main service",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "22638825"
+    "_exporter_id": "38958130"
   },
   "item": [
     {
       "name": "Validation",
       "item": [
         {
-          "name": "Unrequired query params",
+          "name": "Category",
           "item": [
             {
-              "name": "Поиск пользователей без нескольких Query params",
-              "event": [
+              "name": "Required params in body",
+              "item": [
                 {
-                  "listen": "prerequest",
-                  "script": {
-                    "exec": [
-                      "const main = async () => {\r",
-                      "    const api = new API(pm);\r",
-                      "    const rnd = new RandomUtils();\r",
-                      "\r",
-                      "    let compilation;\r",
-                      "    try {\r",
-                      "        const user = await api.addUser(rnd.getUser());\r",
-                      "        pm.collectionVariables.set(\"uid\", user.id)\r",
-                      "    } catch(err) {\r",
-                      "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
-                      "    }\r",
-                      "};\r",
-                      "\r",
-                      "const interval = setInterval(() => {}, 1000);\r",
-                      "\r",
-                      "setTimeout(async () => \r",
-                      "    {\r",
-                      "        try {\r",
-                      "            await main();\r",
-                      "        } catch (e) {\r",
-                      "            console.error(e);\r",
-                      "        } finally {\r",
-                      "            clearInterval(interval);\r",
-                      "        }\r",
-                      "    },  \r",
-                      "    100 \r",
-                      ");"
-                    ],
-                    "type": "text/javascript"
-                  }
-                },
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.test(\"Ответ должен содержать код статуса 200 и данные в формате json\", function () {\r",
-                      "    pm.response.to.be.ok;    \r",
-                      "    pm.response.to.be.withBody;\r",
-                      "    pm.response.to.be.json;\r",
-                      "});"
-                    ],
-                    "type": "text/javascript"
-                  }
-                }
-              ],
-              "request": {
-                "method": "GET",
-                "header": [
-                  {
-                    "key": "Accept",
-                    "value": "application/json"
-                  }
-                ],
-                "url": {
-                  "raw": "{{baseUrl}}/admin/users?ids={{uid}}",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "admin",
-                    "users"
-                  ],
-                  "query": [
+                  "name": "Добавление категории с именем, состоящим из пробелов",
+                  "event": [
                     {
-                      "key": "ids",
-                      "value": "{{uid}}",
-                      "description": "id пользователей"
+                      "listen": "prerequest",
+                      "script": {
+                        "exec": [
+                          "const main = async () => {\r",
+                          "    const api = new API(pm);\r",
+                          "    const rnd = new RandomUtils();\r",
+                          "\r",
+                          "    let category;\r",
+                          "    try {\r",
+                          "        category = {name: '   '};\r",
+                          "    } catch(err) {\r",
+                          "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                          "    }\r",
+                          "\r",
+                          "    pm.request.body.update({\r",
+                          "        mode: 'raw',\r",
+                          "        raw: JSON.stringify(category),\r",
+                          "        options: { raw: { language: 'json' } }\r",
+                          "    });\r",
+                          "};\r",
+                          "\r",
+                          "const interval = setInterval(() => {}, 1000);\r",
+                          "\r",
+                          "setTimeout(async () => \r",
+                          "    {\r",
+                          "        try {\r",
+                          "            await main();\r",
+                          "        } catch (e) {\r",
+                          "            console.error(e);\r",
+                          "        } finally {\r",
+                          "            clearInterval(interval);\r",
+                          "        }\r",
+                          "    },  \r",
+                          "    100 \r",
+                          ");"
+                        ],
+                        "type": "text/javascript"
+                      }
                     },
                     {
-                      "key": "from",
-                      "value": "0",
-                      "description": "количество элементов, которые нужно пропустить для формирования текущего набора",
-                      "disabled": true
-                    },
-                    {
-                      "key": "size",
-                      "value": "10",
-                      "description": "количество элементов в наборе",
-                      "disabled": true
+                      "listen": "test",
+                      "script": {
+                        "exec": [
+                          "pm.test(\"Ответ должен содержать код статуса 400 и данные в формате json\", function () {\r",
+                          "    pm.response.to.be.badRequest;    \r",
+                          "    pm.response.to.be.withBody;\r",
+                          "    pm.response.to.be.json;\r",
+                          "});\r",
+                          ""
+                        ],
+                        "type": "text/javascript"
+                      }
                     }
-                  ]
-                }
-              },
-              "response": []
-            }
-          ]
-        },
-        {
-          "name": "Required params in body",
-          "item": [
-            {
-              "name": "Добавление пользователя с некорректным body",
-              "event": [
-                {
-                  "listen": "prerequest",
-                  "script": {
-                    "exec": [
-                      "const main = async () => {\r",
-                      "    const api = new API(pm);\r",
-                      "    const rnd = new RandomUtils();\r",
-                      "\r",
-                      "    let user;\r",
-                      "    try {\r",
-                      "        user = {\r",
-                      "            email: pm.variables.replaceIn('{{$randomEmail}}')\r",
-                      "        };\r",
-                      "    } catch(err) {\r",
-                      "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
-                      "    }\r",
-                      "\r",
-                      "    pm.request.body.update({\r",
-                      "        mode: 'raw',\r",
-                      "        raw: JSON.stringify(user),\r",
-                      "        options: { raw: { language: 'json' } }\r",
-                      "    });\r",
-                      "};\r",
-                      "\r",
-                      "const interval = setInterval(() => {}, 1000);\r",
-                      "\r",
-                      "setTimeout(async () => \r",
-                      "    {\r",
-                      "        try {\r",
-                      "            await main();\r",
-                      "        } catch (e) {\r",
-                      "            console.error(e);\r",
-                      "        } finally {\r",
-                      "            clearInterval(interval);\r",
-                      "        }\r",
-                      "    },  \r",
-                      "    100 \r",
-                      ");"
-                    ],
-                    "type": "text/javascript"
-                  }
-                },
-                {
-                  "listen": "test",
-                  "script": {
-                    "exec": [
-                      "pm.test(\"Ответ должен содержать код статуса 400 и данные в формате json\", function () {\r",
-                      "    pm.response.to.be.badRequest;    \r",
-                      "    pm.response.to.be.withBody;\r",
-                      "    pm.response.to.be.json;\r",
-                      "});\r",
-                      "\r",
-                      "const target = pm.response.json();\r",
-                      "\r",
-                      "pm.test(\"Ошибка должна содержать поле: status\", function () {\r",
-                      "pm.expect(target).to.have.property('status');\r",
-                      "});\r",
-                      ""
-                    ],
-                    "type": "text/javascript"
-                  }
-                }
-              ],
-              "request": {
-                "method": "POST",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": ""
-                },
-                "url": {
-                  "raw": "{{baseUrl}}/admin/users",
-                  "host": [
-                    "{{baseUrl}}"
                   ],
-                  "path": [
-                    "admin",
-                    "users"
-                  ]
+                  "request": {
+                    "method": "POST",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": ""
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/admin/categories",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "admin",
+                        "categories"
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
+                  "name": "Добавление категории с пустым полем name",
+                  "event": [
+                    {
+                      "listen": "prerequest",
+                      "script": {
+                        "exec": [
+                          "const main = async () => {\r",
+                          "    const api = new API(pm);\r",
+                          "    const rnd = new RandomUtils();\r",
+                          "\r",
+                          "    let category;\r",
+                          "    try {\r",
+                          "        category = {name: ''};\r",
+                          "    } catch(err) {\r",
+                          "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                          "    }\r",
+                          "\r",
+                          "    pm.request.body.update({\r",
+                          "        mode: 'raw',\r",
+                          "        raw: JSON.stringify(category),\r",
+                          "        options: { raw: { language: 'json' } }\r",
+                          "    });\r",
+                          "};\r",
+                          "\r",
+                          "const interval = setInterval(() => {}, 1000);\r",
+                          "\r",
+                          "setTimeout(async () => \r",
+                          "    {\r",
+                          "        try {\r",
+                          "            await main();\r",
+                          "        } catch (e) {\r",
+                          "            console.error(e);\r",
+                          "        } finally {\r",
+                          "            clearInterval(interval);\r",
+                          "        }\r",
+                          "    },  \r",
+                          "    100 \r",
+                          ");"
+                        ],
+                        "type": "text/javascript"
+                      }
+                    },
+                    {
+                      "listen": "test",
+                      "script": {
+                        "exec": [
+                          "pm.test(\"Ответ должен содержать код статуса 400 и данные в формате json\", function () {\r",
+                          "    pm.response.to.be.badRequest;    \r",
+                          "    pm.response.to.be.withBody;\r",
+                          "    pm.response.to.be.json;\r",
+                          "});\r",
+                          ""
+                        ],
+                        "type": "text/javascript"
+                      }
+                    }
+                  ],
+                  "request": {
+                    "method": "POST",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": ""
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/admin/categories",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "admin",
+                        "categories"
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
+                  "name": "Добавление категории без поля name",
+                  "event": [
+                    {
+                      "listen": "prerequest",
+                      "script": {
+                        "exec": [
+                          "const main = async () => {\r",
+                          "    const api = new API(pm);\r",
+                          "    const rnd = new RandomUtils();\r",
+                          "\r",
+                          "    let category;\r",
+                          "    try {\r",
+                          "        category = {};\r",
+                          "    } catch(err) {\r",
+                          "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                          "    }\r",
+                          "\r",
+                          "    pm.request.body.update({\r",
+                          "        mode: 'raw',\r",
+                          "        raw: JSON.stringify(category),\r",
+                          "        options: { raw: { language: 'json' } }\r",
+                          "    });\r",
+                          "};\r",
+                          "\r",
+                          "const interval = setInterval(() => {}, 1000);\r",
+                          "\r",
+                          "setTimeout(async () => \r",
+                          "    {\r",
+                          "        try {\r",
+                          "            await main();\r",
+                          "        } catch (e) {\r",
+                          "            console.error(e);\r",
+                          "        } finally {\r",
+                          "            clearInterval(interval);\r",
+                          "        }\r",
+                          "    },  \r",
+                          "    100 \r",
+                          ");"
+                        ],
+                        "type": "text/javascript"
+                      }
+                    },
+                    {
+                      "listen": "test",
+                      "script": {
+                        "exec": [
+                          "pm.test(\"Ответ должен содержать код статуса 400 и данные в формате json\", function () {\r",
+                          "    pm.response.to.be.badRequest;    \r",
+                          "    pm.response.to.be.withBody;\r",
+                          "    pm.response.to.be.json;\r",
+                          "});\r",
+                          ""
+                        ],
+                        "type": "text/javascript"
+                      }
+                    }
+                  ],
+                  "request": {
+                    "method": "POST",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": ""
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/admin/categories",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "admin",
+                        "categories"
+                      ]
+                    }
+                  },
+                  "response": []
                 }
-              },
-              "response": []
+              ]
+            },
+            {
+              "name": "Misc tests",
+              "item": [
+                {
+                  "name": "Изменение категории с неизменными данными",
+                  "event": [
+                    {
+                      "listen": "prerequest",
+                      "script": {
+                        "exec": [
+                          "const main = async () => {\r",
+                          "    const api = new API(pm);\r",
+                          "    const rnd = new RandomUtils();\r",
+                          "    let category, categoryObj\r",
+                          "    try {\r",
+                          "        category = rnd.getCategory();\r",
+                          "        categoryObj = await api.addCategory(category);\r",
+                          "    } catch(err) {\r",
+                          "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                          "    }\r",
+                          "    pm.collectionVariables.set(\"catid\", Number(categoryObj.id))\r",
+                          "    pm.request.body.update({\r",
+                          "        mode: 'raw',\r",
+                          "        raw: JSON.stringify(category),\r",
+                          "        options: { raw: { language: 'json' } }\r",
+                          "    });\r",
+                          "};\r",
+                          "\r",
+                          "const interval = setInterval(() => {}, 1000);\r",
+                          "\r",
+                          "setTimeout(async () => \r",
+                          "    {\r",
+                          "        try {\r",
+                          "            await main();\r",
+                          "        } catch (e) {\r",
+                          "            console.error(e);\r",
+                          "        } finally {\r",
+                          "            clearInterval(interval);\r",
+                          "        }\r",
+                          "    },  \r",
+                          "    100 \r",
+                          ");"
+                        ],
+                        "type": "text/javascript"
+                      }
+                    },
+                    {
+                      "listen": "test",
+                      "script": {
+                        "exec": [
+                          "pm.test(\"Ответ должен содержать код статуса 200 и данные в формате json\", function () {\r",
+                          "    pm.response.to.be.ok;    \r",
+                          "    pm.response.to.be.withBody;\r",
+                          "    pm.response.to.be.json;\r",
+                          "});\r",
+                          "\r",
+                          "const source = JSON.parse(pm.request.body.raw);\r",
+                          "const target = pm.response.json();\r",
+                          "\r",
+                          "pm.test(\"Категория должна содержать поля: id, name\", function () {\r",
+                          "pm.expect(target).to.have.property('id');\r",
+                          "pm.expect(target).to.have.property('name');\r",
+                          "});\r",
+                          "\r",
+                          "pm.test(\"Данные в ответе должны соответствовать данным в запросе\", function () {\r",
+                          "    pm.expect(target.id).to.not.be.null;\r",
+                          "    pm.expect(source.name).equal(target.name, 'Название категории должно совпадать с отправленным');\r",
+                          "});"
+                        ],
+                        "type": "text/javascript"
+                      }
+                    }
+                  ],
+                  "request": {
+                    "method": "PATCH",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{{request_body}}"
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/admin/categories/:catId",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "admin",
+                        "categories",
+                        ":catId"
+                      ],
+                      "variable": [
+                        {
+                          "key": "catId",
+                          "value": "{{catid}}"
+                        }
+                      ]
+                    }
+                  },
+                  "response": []
+                }
+              ]
+            },
+            {
+              "name": "String length restrictions",
+              "item": [
+                {
+                  "name": "Добавление новой категории с name.length > 50",
+                  "event": [
+                    {
+                      "listen": "prerequest",
+                      "script": {
+                        "exec": [
+                          "const main = async () => {\r",
+                          "    const api = new API(pm);\r",
+                          "    const rnd = new RandomUtils();\r",
+                          "\r",
+                          "    let category;\r",
+                          "    try {\r",
+                          "        category = {'name': rnd.getWord(51)};\r",
+                          "    } catch(err) {\r",
+                          "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                          "    }\r",
+                          "\r",
+                          "    pm.request.body.update({\r",
+                          "        mode: 'raw',\r",
+                          "        raw: JSON.stringify(category),\r",
+                          "        options: { raw: { language: 'json' } }\r",
+                          "    });\r",
+                          "};\r",
+                          "\r",
+                          "const interval = setInterval(() => {}, 1000);\r",
+                          "\r",
+                          "setTimeout(async () => \r",
+                          "    {\r",
+                          "        try {\r",
+                          "            await main();\r",
+                          "        } catch (e) {\r",
+                          "            console.error(e);\r",
+                          "        } finally {\r",
+                          "            clearInterval(interval);\r",
+                          "        }\r",
+                          "    },  \r",
+                          "    100 \r",
+                          ");"
+                        ],
+                        "type": "text/javascript"
+                      }
+                    },
+                    {
+                      "listen": "test",
+                      "script": {
+                        "exec": [
+                          "pm.test(\"Ответ должен содержать код статуса 400 и данные в формате json\", function () {\r",
+                          "    pm.response.to.be.badRequest;    \r",
+                          "    pm.response.to.be.withBody;\r",
+                          "    pm.response.to.be.json;\r",
+                          "});\r",
+                          ""
+                        ],
+                        "type": "text/javascript"
+                      }
+                    }
+                  ],
+                  "request": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{{request_body}}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/admin/categories",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "admin",
+                        "categories"
+                      ]
+                    },
+                    "description": "Обратите внимание: имя категории должно быть уникальным"
+                  },
+                  "response": []
+                },
+                {
+                  "name": "Добавление новой категории с name.length == 50",
+                  "event": [
+                    {
+                      "listen": "prerequest",
+                      "script": {
+                        "exec": [
+                          "const main = async () => {\r",
+                          "    const api = new API(pm);\r",
+                          "    const rnd = new RandomUtils();\r",
+                          "\r",
+                          "    let category;\r",
+                          "    try {\r",
+                          "        category = {'name': rnd.getWord(50)};\r",
+                          "    } catch(err) {\r",
+                          "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                          "    }\r",
+                          "\r",
+                          "    pm.request.body.update({\r",
+                          "        mode: 'raw',\r",
+                          "        raw: JSON.stringify(category),\r",
+                          "        options: { raw: { language: 'json' } }\r",
+                          "    });\r",
+                          "};\r",
+                          "\r",
+                          "const interval = setInterval(() => {}, 1000);\r",
+                          "\r",
+                          "setTimeout(async () => \r",
+                          "    {\r",
+                          "        try {\r",
+                          "            await main();\r",
+                          "        } catch (e) {\r",
+                          "            console.error(e);\r",
+                          "        } finally {\r",
+                          "            clearInterval(interval);\r",
+                          "        }\r",
+                          "    },  \r",
+                          "    100 \r",
+                          ");"
+                        ],
+                        "type": "text/javascript"
+                      }
+                    },
+                    {
+                      "listen": "test",
+                      "script": {
+                        "exec": [
+                          "pm.test(\"Ответ должен содержать код статуса 201 и данные в формате json\", function () {\r",
+                          "    pm.response.to.have.status(201);\r",
+                          "    pm.response.to.be.withBody;\r",
+                          "    pm.response.to.be.json;\r",
+                          "});\r",
+                          ""
+                        ],
+                        "type": "text/javascript"
+                      }
+                    }
+                  ],
+                  "request": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "Accept",
+                        "value": "application/json"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{{request_body}}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/admin/categories",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "admin",
+                        "categories"
+                      ]
+                    },
+                    "description": "Обратите внимание: имя категории должно быть уникальным"
+                  },
+                  "response": []
+                },
+                {
+                  "name": "Изменение имени категории с name.length > 50",
+                  "event": [
+                    {
+                      "listen": "prerequest",
+                      "script": {
+                        "exec": [
+                          "const main = async () => {\r",
+                          "    const api = new API(pm);\r",
+                          "    const rnd = new RandomUtils();\r",
+                          "    let category\r",
+                          "    try {\r",
+                          "        category = await api.addCategory(rnd.getCategory());\r",
+                          "    } catch(err) {\r",
+                          "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                          "    }\r",
+                          "    pm.collectionVariables.set(\"catid\", Number(category.id))\r",
+                          "    pm.request.body.update({\r",
+                          "        mode: 'raw',\r",
+                          "        raw: JSON.stringify({\r",
+                          "            name : rnd.getWord(51)\r",
+                          "        }),\r",
+                          "        options: { raw: { language: 'json' } }\r",
+                          "    });\r",
+                          "};\r",
+                          "\r",
+                          "const interval = setInterval(() => {}, 1000);\r",
+                          "\r",
+                          "setTimeout(async () => \r",
+                          "    {\r",
+                          "        try {\r",
+                          "            await main();\r",
+                          "        } catch (e) {\r",
+                          "            console.error(e);\r",
+                          "        } finally {\r",
+                          "            clearInterval(interval);\r",
+                          "        }\r",
+                          "    },  \r",
+                          "    100 \r",
+                          ");"
+                        ],
+                        "type": "text/javascript"
+                      }
+                    },
+                    {
+                      "listen": "test",
+                      "script": {
+                        "exec": [
+                          "pm.test(\"Ответ должен содержать код статуса 400 и данные в формате json\", function () {\r",
+                          "    pm.response.to.be.badRequest;    \r",
+                          "    pm.response.to.be.withBody;\r",
+                          "    pm.response.to.be.json;\r",
+                          "});\r",
+                          ""
+                        ],
+                        "type": "text/javascript"
+                      }
+                    }
+                  ],
+                  "request": {
+                    "method": "PATCH",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{{request_body}}"
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/admin/categories/:catId",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "admin",
+                        "categories",
+                        ":catId"
+                      ],
+                      "variable": [
+                        {
+                          "key": "catId",
+                          "value": "{{catid}}"
+                        }
+                      ]
+                    }
+                  },
+                  "response": []
+                },
+                {
+                  "name": "Изменение имени категории с name.length == 50",
+                  "event": [
+                    {
+                      "listen": "prerequest",
+                      "script": {
+                        "exec": [
+                          "const main = async () => {\r",
+                          "    const api = new API(pm);\r",
+                          "    const rnd = new RandomUtils();\r",
+                          "    let category\r",
+                          "    try {\r",
+                          "        category = await api.addCategory(rnd.getCategory());\r",
+                          "    } catch(err) {\r",
+                          "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                          "    }\r",
+                          "    pm.collectionVariables.set(\"catid\", Number(category.id))\r",
+                          "    pm.request.body.update({\r",
+                          "        mode: 'raw',\r",
+                          "        raw: JSON.stringify({\r",
+                          "            name : rnd.getWord(50)\r",
+                          "        }),\r",
+                          "        options: { raw: { language: 'json' } }\r",
+                          "    });\r",
+                          "};\r",
+                          "\r",
+                          "const interval = setInterval(() => {}, 1000);\r",
+                          "\r",
+                          "setTimeout(async () => \r",
+                          "    {\r",
+                          "        try {\r",
+                          "            await main();\r",
+                          "        } catch (e) {\r",
+                          "            console.error(e);\r",
+                          "        } finally {\r",
+                          "            clearInterval(interval);\r",
+                          "        }\r",
+                          "    },  \r",
+                          "    100 \r",
+                          ");"
+                        ],
+                        "type": "text/javascript"
+                      }
+                    },
+                    {
+                      "listen": "test",
+                      "script": {
+                        "exec": [
+                          "pm.test(\"Ответ должен содержать код статуса 200 и данные в формате json\", function () {\r",
+                          "    pm.response.to.have.status(200);\r",
+                          "    pm.response.to.be.withBody;\r",
+                          "    pm.response.to.be.json;\r",
+                          "});\r",
+                          ""
+                        ],
+                        "type": "text/javascript"
+                      }
+                    }
+                  ],
+                  "request": {
+                    "method": "PATCH",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{{request_body}}"
+                    },
+                    "url": {
+                      "raw": "{{baseUrl}}/admin/categories/:catId",
+                      "host": [
+                        "{{baseUrl}}"
+                      ],
+                      "path": [
+                        "admin",
+                        "categories",
+                        ":catId"
+                      ],
+                      "variable": [
+                        {
+                          "key": "catId",
+                          "value": "{{catid}}"
+                        }
+                      ]
+                    }
+                  },
+                  "response": []
+                }
+              ]
             }
           ]
         }
@@ -203,7 +724,201 @@
       "name": "409 Conflict",
       "item": [
         {
-          "name": "Добавление пользователя с занятым именем",
+          "name": "Попытка изменения имени категории на уже существующее",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "    let category1, category2\r",
+                  "    try {\r",
+                  "        category1 = await api.addCategory(rnd.getCategory());\r",
+                  "        category2 = await api.addCategory(rnd.getCategory());\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "    pm.collectionVariables.set(\"catid\", category2.id)\r",
+                  "    pm.request.body.update({\r",
+                  "        mode: 'raw',\r",
+                  "        raw: JSON.stringify({\r",
+                  "            name : category1.name\r",
+                  "        }),\r",
+                  "        options: { raw: { language: 'json' } }\r",
+                  "    });\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Ответ должен содержать код статуса 409 и данные в формате json\", function () {\r",
+                  "    pm.response.to.have.status(409);\r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{{request_body}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/categories/:catId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "categories",
+                ":catId"
+              ],
+              "variable": [
+                {
+                  "key": "catId",
+                  "value": "{{catid}}"
+                }
+              ]
+            },
+            "description": "Обратите внимание: имя категории должно быть уникальным"
+          },
+          "response": []
+        },
+        {
+          "name": "Добавление новой категории с занятым именем",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "\r",
+                  "    let category;\r",
+                  "    try {\r",
+                  "        category = rnd.getCategory();\r",
+                  "        await api.addCategory(category);\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "\r",
+                  "    pm.request.body.update({\r",
+                  "        mode: 'raw',\r",
+                  "        raw: JSON.stringify(category),\r",
+                  "        options: { raw: { language: 'json' } }\r",
+                  "    });\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Ответ должен содержать код статуса 409 и данные в формате json\", function () {\r",
+                  "    pm.response.to.have.status(409);\r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{{request_body}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "categories"
+              ]
+            },
+            "description": "Обратите внимание: имя категории должно быть уникальным"
+          },
+          "response": []
+        },
+        {
+          "name": "Добавление пользователя с занятым именем почты",
           "event": [
             {
               "listen": "prerequest",
@@ -216,6 +931,7 @@
                   "    let user;\r",
                   "    try {\r",
                   "        user = rnd.getUser();\r",
+                  "        user.name = rnd.getWord(10);\r",
                   "        await api.addUser(user);\r",
                   "    } catch(err) {\r",
                   "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
@@ -293,14 +1009,9 @@
             }
           },
           "response": []
-        }
-      ]
-    },
-    {
-      "name": "Users",
-      "item": [
+        },
         {
-          "name": "Поиск пользователей",
+          "name": "Удаление категории с привязанными событиями",
           "event": [
             {
               "listen": "prerequest",
@@ -310,10 +1021,11 @@
                   "    const api = new API(pm);\r",
                   "    const rnd = new RandomUtils();\r",
                   "\r",
-                  "    let compilation;\r",
                   "    try {\r",
+                  "        const category = await api.addCategory(rnd.getCategory());\r",
                   "        const user = await api.addUser(rnd.getUser());\r",
-                  "        pm.collectionVariables.set(\"uid\", user.id)\r",
+                  "        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+                  "        pm.collectionVariables.set('catid', category.id);\r",
                   "    } catch(err) {\r",
                   "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
                   "    }\r",
@@ -341,26 +1053,10 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Ответ должен содержать код статуса 200 и данные в формате json\", function () {\r",
-                  "    pm.response.to.be.ok;    \r",
+                  "pm.test(\"Ответ должен содержать код статуса 409 и данные в формате json\", function () {\r",
+                  "    pm.response.to.have.status(409);\r",
                   "    pm.response.to.be.withBody;\r",
                   "    pm.response.to.be.json;\r",
-                  "});\r",
-                  "\r",
-                  "const target = pm.response.json();\r",
-                  "\r",
-                  "pm.test(\"Пользователи должны содержать поля: id, name, email\", function () {\r",
-                  "    pm.expect(target[0]).to.have.property('id');\r",
-                  "    pm.expect(target[0]).to.have.property('name');\r",
-                  "    pm.expect(target[0]).to.have.property('email');\r",
-                  "});\r",
-                  "\r",
-                  "pm.test(\"Должен быть найден только один пользователь по заданному фильтру\", function () {\r",
-                  "    pm.expect(target.length).to.eql(1);\r",
-                  "});\r",
-                  "\r",
-                  "pm.test(\"Данные в ответе должны соответствовать данным в запросе\", function () {\r",
-                  "    pm.expect(target[0].id).equal(pm.collectionVariables.get(\"uid\"));\r",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -368,7 +1064,7 @@
             }
           ],
           "request": {
-            "method": "GET",
+            "method": "DELETE",
             "header": [
               {
                 "key": "Accept",
@@ -376,45 +1072,119 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/admin/users?ids={{uid}}",
+              "raw": "{{baseUrl}}/admin/categories/:catId",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "admin",
-                "users"
+                "categories",
+                ":catId"
               ],
-              "query": [
+              "variable": [
                 {
-                  "key": "ids",
-                  "value": "{{uid}}",
-                  "description": "id пользователей"
-                },
+                  "key": "catId",
+                  "value": "{{catid}}"
+                }
+              ]
+            },
+            "description": "Обратите внимание: с категорий не должно быть связано ни одного события."
+          },
+          "response": []
+        },
+        {
+          "name": "Изменение имени категории на уже занятое",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "    let category1, category2\r",
+                  "    try {\r",
+                  "        category1 = await api.addCategory(rnd.getCategory());\r",
+                  "        category2 = await api.addCategory(rnd.getCategory());\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "    pm.collectionVariables.set(\"catid\", Number(category1.id))\r",
+                  "    pm.request.body.update({\r",
+                  "        mode: 'raw',\r",
+                  "        raw: JSON.stringify({\r",
+                  "            name : category2.name\r",
+                  "        }),\r",
+                  "        options: { raw: { language: 'json' } }\r",
+                  "    });\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Ответ должен содержать код статуса 409 и данные в формате json\", function () {\r",
+                  "    pm.response.to.have.status(409);\r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{{request_body}}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/categories/:catId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "categories",
+                ":catId"
+              ],
+              "variable": [
                 {
-                  "key": "ids",
-                  "value": "-10833646",
-                  "description": "id пользователей",
-                  "disabled": true
-                },
-                {
-                  "key": "from",
-                  "value": "0",
-                  "description": "количество элементов, которые нужно пропустить для формирования текущего набора",
-                  "disabled": true
-                },
-                {
-                  "key": "size",
-                  "value": "10",
-                  "description": "количество элементов в наборе",
-                  "disabled": true
+                  "key": "catId",
+                  "value": "{{catid}}"
                 }
               ]
             }
           },
           "response": []
-        },
+        }
+      ]
+    },
+    {
+      "name": "Category",
+      "item": [
         {
-          "name": "Добавление нового пользователя",
+          "name": "Добавление новой категории",
           "event": [
             {
               "listen": "prerequest",
@@ -424,16 +1194,16 @@
                   "    const api = new API(pm);\r",
                   "    const rnd = new RandomUtils();\r",
                   "\r",
-                  "    let user;\r",
+                  "    let category;\r",
                   "    try {\r",
-                  "        user = rnd.getUser();\r",
+                  "        category = rnd.getCategory();\r",
                   "    } catch(err) {\r",
                   "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
                   "    }\r",
                   "\r",
                   "    pm.request.body.update({\r",
                   "        mode: 'raw',\r",
-                  "        raw: JSON.stringify(user),\r",
+                  "        raw: JSON.stringify(category),\r",
                   "        options: { raw: { language: 'json' } }\r",
                   "    });\r",
                   "};\r",
@@ -469,16 +1239,14 @@
                   "const source = JSON.parse(pm.request.body.raw);\r",
                   "const target = pm.response.json();\r",
                   "\r",
-                  "pm.test(\"Пользователь должен содержать поля: id, name, email\", function () {\r",
+                  "pm.test(\"Категория должна содержать поля: id, name\", function () {\r",
                   "pm.expect(target).to.have.property('id');\r",
                   "pm.expect(target).to.have.property('name');\r",
-                  "pm.expect(target).to.have.property('email');\r",
                   "});\r",
                   "\r",
                   "pm.test(\"Данные в ответе должны соответствовать данным в запросе\", function () {\r",
                   "    pm.expect(target.id).to.not.be.null;\r",
-                  "    pm.expect(source.name).equal(target.name, 'Имя пользователя должно соответствовать отправленному в запросе');\r",
-                  "    pm.expect(source.email).equal(target.email, 'Почта пользователя должна соответствовать отправленной в запросе');\r",
+                  "    pm.expect(source.name).equal(target.name, 'Название категории должно совпадать с отправленным');\r",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -507,51 +1275,22 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/admin/users",
+              "raw": "{{baseUrl}}/admin/categories",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "admin",
-                "users"
+                "categories"
               ]
-            }
+            },
+            "description": "Обратите внимание: имя категории должно быть уникальным"
           },
           "response": []
         },
         {
-          "name": "Удаление пользователя",
+          "name": "Удаление категории",
           "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Ответ должен содержать код статуса 204\", function () {\r",
-                  "    pm.response.to.have.status(204);\r",
-                  "});\r",
-                  "const source = pm.collectionVariables.get('response');\r",
-                  "const userId = pm.collectionVariables.get('uid');\r",
-                  "\r",
-                  "pm.test(\"Пользователь должен быть найден до выполнения запроса\", function(){\r",
-                  "    pm.expect(source.length).to.eql(1);\r",
-                  "    pm.expect(source[0].id).to.eql(userId);\r",
-                  "});\r",
-                  "let body\r",
-                  "const req = {\r",
-                  "                url: \"http://localhost:8080/admin/users?ids=\" + pm.collectionVariables.get(\"uid\"),\r",
-                  "                method: \"GET\",\r",
-                  "                body: body == null ? \"\" : JSON.stringify(body),\r",
-                  "                header: { \"Content-Type\": \"application/json\" },\r",
-                  "            };\r",
-                  "pm.sendRequest(req, (error, response) => {\r",
-                  "    pm.test(\"Пользователь должен быть удалён после выполнения запроса\", function(){\r",
-                  "        pm.expect(response.json().length).to.eql(0);\r",
-                  "    });\r",
-                  "})"
-                ],
-                "type": "text/javascript"
-              }
-            },
             {
               "listen": "prerequest",
               "script": {
@@ -560,12 +1299,11 @@
                   "    const api = new API(pm);\r",
                   "    const rnd = new RandomUtils();\r",
                   "\r",
-                  "    let compilation;\r",
                   "    try {\r",
-                  "        const user = await api.addUser(rnd.getUser());\r",
-                  "        const foundedUser = await api.findUser(user.id);\r",
-                  "        pm.collectionVariables.set(\"uid\", user.id);\r",
-                  "        pm.collectionVariables.set(\"response\", foundedUser)\r",
+                  "        const category = await api.addCategory(rnd.getCategory());\r",
+                  "        const findedCategory = await api.findCategory(category.id);\r",
+                  "        pm.collectionVariables.set(\"catid\", category.id)\r",
+                  "        pm.collectionVariables.set(\"response\", findedCategory)\r",
                   "    } catch(err) {\r",
                   "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
                   "    }\r",
@@ -588,6 +1326,33 @@
                 ],
                 "type": "text/javascript"
               }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Ответ должен содержать код статуса 204\", function () {\r",
+                  "    pm.response.to.have.status(204);\r",
+                  "});\r",
+                  "\r",
+                  "source = pm.collectionVariables.get('response');\r",
+                  "catId = pm.collectionVariables.get('catid');\r",
+                  "\r",
+                  "pm.test(\"Категория должна быть найдена до удаления\", function () {\r",
+                  "    pm.expect(source.id).equal(catId, 'Идентификтор категории должен совпадать с удаляемым');\r",
+                  "});\r",
+                  "\r",
+                  "pm.sendRequest({\r",
+                  "        url: pm.collectionVariables.get(\"baseUrl\") + \"/categories/\" + catId,\r",
+                  "        method: 'GET',\r",
+                  "    }, (error, response) => {\r",
+                  "        pm.test(\"Категория не должна быть найдена после удаления\", function () {\r",
+                  "            pm.expect(response.code).to.eql(404);\r",
+                  "        });\r",
+                  "    });"
+                ],
+                "type": "text/javascript"
+              }
             }
           ],
           "request": {
@@ -599,20 +1364,118 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/admin/users/:userId",
+              "raw": "{{baseUrl}}/admin/categories/:catId",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "admin",
-                "users",
-                ":userId"
+                "categories",
+                ":catId"
               ],
               "variable": [
                 {
-                  "key": "userId",
-                  "value": "{{uid}}",
-                  "description": "(Required) id пользователя"
+                  "key": "catId",
+                  "value": "{{catid}}"
+                }
+              ]
+            },
+            "description": "Обратите внимание: с категорий не должно быть связано ни одного события."
+          },
+          "response": []
+        },
+        {
+          "name": "Изменение категории",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const main = async () => {\r",
+                  "    const api = new API(pm);\r",
+                  "    const rnd = new RandomUtils();\r",
+                  "    let category\r",
+                  "    try {\r",
+                  "        category = await api.addCategory(rnd.getCategory());\r",
+                  "    } catch(err) {\r",
+                  "        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+                  "    }\r",
+                  "    pm.collectionVariables.set(\"catid\", Number(category.id))\r",
+                  "    pm.request.body.update({\r",
+                  "        mode: 'raw',\r",
+                  "        raw: JSON.stringify({\r",
+                  "            name : rnd.getCategory().name\r",
+                  "        }),\r",
+                  "        options: { raw: { language: 'json' } }\r",
+                  "    });\r",
+                  "};\r",
+                  "\r",
+                  "const interval = setInterval(() => {}, 1000);\r",
+                  "\r",
+                  "setTimeout(async () => \r",
+                  "    {\r",
+                  "        try {\r",
+                  "            await main();\r",
+                  "        } catch (e) {\r",
+                  "            console.error(e);\r",
+                  "        } finally {\r",
+                  "            clearInterval(interval);\r",
+                  "        }\r",
+                  "    },  \r",
+                  "    100 \r",
+                  ");"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Ответ должен содержать код статуса 200 и данные в формате json\", function () {\r",
+                  "    pm.response.to.be.ok;    \r",
+                  "    pm.response.to.be.withBody;\r",
+                  "    pm.response.to.be.json;\r",
+                  "});\r",
+                  "\r",
+                  "const source = JSON.parse(pm.request.body.raw);\r",
+                  "const target = pm.response.json();\r",
+                  "\r",
+                  "pm.test(\"Категория должна содержать поля: id, name\", function () {\r",
+                  "pm.expect(target).to.have.property('id');\r",
+                  "pm.expect(target).to.have.property('name');\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Данные в ответе должны соответствовать данным в запросе\", function () {\r",
+                  "    pm.expect(target.id).to.not.be.null;\r",
+                  "    pm.expect(source.name).equal(target.name, 'Название категории должно совпадать с отправленным');\r",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{{request_body}}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/categories/:catId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "categories",
+                ":catId"
+              ],
+              "variable": [
+                {
+                  "key": "catId",
+                  "value": "{{catid}}"
                 }
               ]
             }
@@ -664,7 +1527,7 @@
           "    }",
           "",
           "    async acceptParticipationRequest(eventId, userId, reqId, verbose=null) {",
-          "        return this.patch('/users/' + userId + '/events/' + eventId + '/requests/', {requestIds:[reqId], status: \"CONFIRMED\"}, \"Ошибка при принятии заявки на участие в событии\", verbose);",
+          "        return this.patch('/users/' + userId + '/events/' + eventId + '/requests', {requestIds:[reqId], status: \"CONFIRMED\"}, \"Ошибка при принятии заявки на участие в событии\", verbose);",
           "    }",
           "",
           "    async findCategory(catId, verbose=null) {",
@@ -673,6 +1536,10 @@
           "",
           "    async findCompilation(compId, verbose=null) {",
           "        return this.get('/compilations/' + compId, null, \"Ошибка при поиске подборки по id\", verbose);",
+          "    }",
+          "",
+          "    async findEvent(eventId, verbose=null) {",
+          "        return this.get('/events/' + eventId, null, \"Ошибка при поиске события по id\", verbose);",
           "    }",
           "",
           "    async findUser(userId, verbose=null) {",
@@ -690,18 +1557,15 @@
           "    async get(path, body = null, errorText = \"Ошибка при выполнении get-запроса: \", verbose=null) {",
           "        return this.sendRequest(\"GET\", path, body, errorText, verbose);",
           "    }",
-          "",
           "    async sendRequest(method, path, body=null, errorText = \"Ошибка при выполнении запроса: \", verbose=null) {",
           "        return new Promise((resolve, reject) => {",
           "            verbose = verbose == null ? this._verbose : verbose;",
-          "",
           "            const request = {",
           "                url: this.baseUrl + path,",
           "                method: method,",
           "                body: body == null ? \"\" : JSON.stringify(body),",
           "                header: { \"Content-Type\": \"application/json\" },",
           "            };",
-          "",
           "            if(verbose) {",
           "                console.log(\"Отправляю запрос: \", request);",
           "            }",
@@ -716,13 +1580,16 @@
           "",
           "                        reject(new Error(errorText + err));",
           "                    }",
-          "",
           "                    if(verbose) {",
           "                        console.log(\"Результат обработки запроса: код состояния - \", response.code, \", тело: \", response.json());",
           "                    }",
-          "",
-          "                    resolve(response.json());",
+          "                    if (response.stream.length === 0){",
+          "                        reject(new Error('Отправлено пустое тело ответа'))",
+          "                    }else{",
+          "                        resolve(response.json());",
+          "                    }",
           "                });",
+          "                ",
           "            } catch(err) {",
           "                if(verbose) {",
           "                    console.error(errorText, err);",
@@ -745,7 +1612,7 @@
           "",
           "    getCategory() {",
           "        return {",
-          "            name: pm.variables.replaceIn('{{$randomWord}}') + Math.floor(Math.random() * 100).toString()",
+          "            name: pm.variables.replaceIn('{{$randomWord}}') + Math.floor(Math.random() * 10000 * Math.random()).toString()",
           "        };",
           "    }",
           "",
@@ -768,11 +1635,12 @@
           "",
           "    getCompilation(...eventIds) {",
           "        return {",
-          "            title: pm.variables.replaceIn('{{$randomLoremSentence}}'),",
+          "            title: pm.variables.replaceIn('{{$randomLoremSentence}}').slice(0, 50),",
           "            pinned: pm.variables.replaceIn('{{$randomBoolean}}'),",
           "            events: eventIds",
           "        };",
           "    }",
+          "",
           "",
           "    getFutureDateTime(hourShift = 5, minuteShift=0, yearShift=0) {",
           "        let moment = require('moment');",
@@ -783,6 +1651,18 @@
           "        m.add(yearShift, 'year');",
           "",
           "        return m.format('YYYY-MM-DD HH:mm:ss');",
+          "    }",
+          "",
+          "    getWord(length = 1) {",
+          "        let result = '';",
+          "        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+          "        const charactersLength = characters.length;",
+          "        let counter = 0;",
+          "        while (counter < length) {",
+          "            result += characters.charAt(Math.floor(Math.random() * charactersLength));",
+          "            counter += 1;",
+          "        }",
+          "        return result;",
           "    }",
           "}"
         ]
@@ -868,6 +1748,30 @@
     },
     {
       "key": "catId",
+      "value": ""
+    },
+    {
+      "key": "confirmedRequests",
+      "value": ""
+    },
+    {
+      "key": "responseArr",
+      "value": ""
+    },
+    {
+      "key": "source1",
+      "value": ""
+    },
+    {
+      "key": "source2",
+      "value": ""
+    },
+    {
+      "key": "fromId",
+      "value": "0"
+    },
+    {
+      "key": "source",
       "value": ""
     }
   ]
