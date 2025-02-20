@@ -33,6 +33,6 @@ public class CategoryServiceImpl implements CategoryService {
     public void deleteCategory(Integer catId) {
         Category category = categoryRepository.findById(catId)
                 .orElseThrow(() -> new NotFoundException(String.format("Category with id=%d was not found", catId)));
-        categoryRepository.delete(category);
+        categoryRepository.deleteById(catId);
     }
 }
