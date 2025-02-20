@@ -1,6 +1,8 @@
 package ru.practicum.main_service.categories.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.main_service.categories.dto.CategoryDto;
 import ru.practicum.main_service.categories.dto.NewCategoryDto;
@@ -9,30 +11,56 @@ import ru.practicum.main_service.categories.model.Category;
 import ru.practicum.main_service.categories.repository.CategoryRepository;
 import ru.practicum.main_service.exception.NotFoundException;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final CategoryMapper categoryMapper;
 
     @Override
     public CategoryDto createCategory(NewCategoryDto newCategoryDto) {
-        return CategoryMapper.toCategoryDto(categoryRepository.save(
-                CategoryMapper.toModelByNew(newCategoryDto)));
+        return categoryMapper.toCategoryDto(categoryRepository.save(
+                categoryMapper.toModelByNew(newCategoryDto)));
     }
 
     @Override
     public CategoryDto updateCategory(Integer catId, CategoryDto categoryDto) {
-        Category category = categoryRepository.findById(catId)
-                .orElseThrow(() -> new NotFoundException(String.format("Category with id=%d was not found", catId)));
+        Category category = getCategoryById(catId);
         category.setName(categoryDto.getName());
-        return CategoryMapper.toCategoryDto(categoryRepository.save(category));
+        return categoryMapper.toCategoryDto(categoryRepository.save(category));
     }
 
     @Override
     public void deleteCategory(Integer catId) {
-        Category category = categoryRepository.findById(catId)
-                .orElseThrow(() -> new NotFoundException(String.format("Category with id=%d was not found", catId)));
+        Category category = getCategoryById(catId);
         categoryRepository.deleteById(catId);
+    }
+
+    @Override
+    public CategoryDto getCategory(Integer catId) {
+        Category category = getCategoryById(catId);
+        return categoryMapper.toCategoryDto(category);
+    }
+
+    @Override
+    public List<CategoryDto> getCategories(Integer from, Integer size) {
+        Pageable page = PageRequest.of(from, size);
+
+        List<Category> categories = categoryRepository.findAll(page).getContent();
+        if (categories.isEmpty()) {
+            return List.of();
+        } else {
+            return categories.stream()
+                    .map(categoryMapper::toCategoryDto)
+                    .toList();
+        }
+    }
+
+    private Category getCategoryById(Integer catId) {
+        return categoryRepository.findById(catId)
+                .orElseThrow(() -> new NotFoundException(String.format("Category with id=%d was not found", catId)));
     }
 }
