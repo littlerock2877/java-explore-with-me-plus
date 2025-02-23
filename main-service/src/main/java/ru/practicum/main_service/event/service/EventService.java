@@ -11,9 +11,11 @@ import java.util.List;
 public interface EventService {
     List<EventShortDto> getEventsByUser(Integer userId, Integer from, Integer size);
 
+    @Transactional
     EventFullDto createEvent(Integer userId, NewEventDto newEventDto);
 
     EventFullDto getEventFullInformation(Integer userId, Integer eventId);
 
+    @Transactional
     EventFullDto updateEvent(Integer userId, Integer eventId, UpdateEventUserDto updateEventUserDto);
 }
