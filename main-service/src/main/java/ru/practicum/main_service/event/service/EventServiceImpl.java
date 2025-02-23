@@ -63,7 +63,6 @@ public class EventServiceImpl implements EventService {
     public EventFullDto updateEvent(Integer userId, Integer eventId, UpdateEventUserDto updateEventUserDto) {
         Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
                 .orElseThrow(() -> new NotFoundException(String.format("Event with id=%d was not found", eventId)));
-
         if (updateEventUserDto.getEventDate() != null && !updateEventUserDto.getEventDate().isAfter(LocalDateTime.now().plus(2, ChronoUnit.HOURS))) {
             throw new DataIntegrityViolationException("Event date should be in 2+ hours after now");
         }
