@@ -1,6 +1,7 @@
 package client;
 
 import exception.InvalidRequestException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,8 +20,7 @@ public class RestStatClient implements StatClient {
     private final String statUrl;
     private final RestClient restClient;
 
-
-    public RestStatClient(RestClient restClient, String statUrl) {
+    public RestStatClient(@Value("${client.url}") String statUrl) {
         this.statUrl = statUrl;
         this.restClient = RestClient.builder()
                 .baseUrl(statUrl)
