@@ -1,8 +1,8 @@
 package ru.practicum.main_service.compilation.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,12 +13,11 @@ import lombok.experimental.FieldDefaults;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@IdClass(CompilationEventKey.class)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CompilationEvents {
-    @EmbeddedId
-    CompilationEventsKey id;
-    @Column(name = "compilation_id")
+public class CompilationEvent {
+    @Id
     int compilationId;
-    @Column(name = "event_id")
+    @Id
     int eventId;
 }
