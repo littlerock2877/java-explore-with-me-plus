@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS compilations
 
 CREATE TABLE IF NOT EXISTS compilation_events
 (
-    compilation_id INTEGER REFERENCES compilations(id),
-    event_id INTEGER REFERENCES events(id),
+    compilation_id INTEGER REFERENCES compilations(id) ON DELETE CASCADE NOT NULL,
+    event_id INTEGER REFERENCES events(id) ON DELETE CASCADE NOT NULL,
     PRIMARY KEY (compilation_id, event_id)
 );
