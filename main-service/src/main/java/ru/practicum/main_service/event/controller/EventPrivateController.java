@@ -10,6 +10,10 @@ import ru.practicum.main_service.event.dto.EventShortDto;
 import ru.practicum.main_service.event.dto.NewEventDto;
 import ru.practicum.main_service.event.dto.UpdateEventUserDto;
 import ru.practicum.main_service.event.service.EventService;
+import ru.practicum.main_service.request.dto.EventRequestStatusUpdateRequest;
+import ru.practicum.main_service.request.dto.EventRequestStatusUpdateResult;
+import ru.practicum.main_service.request.dto.RequestDto;
+import ru.practicum.main_service.request.service.RequestService;
 import java.util.List;
 
 @RestController
@@ -18,6 +22,7 @@ import java.util.List;
 @RequestMapping("/users/{userId}/events")
 public class EventPrivateController {
     private final EventService eventService;
+    private final RequestService requestService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -53,5 +58,21 @@ public class EventPrivateController {
         EventFullDto createdDto = eventService.updateEvent(userId, eventId, updateEventUserDto);
         log.info("Updating event with id {} by user with id {} - Finished", eventId, userId);
         return createdDto;
+    }
+
+    @GetMapping("/{eventId}/requests")
+    public List<RequestDto> getRequestsByOwnerOfEvent(@PathVariable Integer userId, @PathVariable Integer eventId) {
+        log.info("Getting requests for event with id {} by user with id {} - Started", eventId, userId);
+        List<RequestDto> requests = requestService.getRequestsByOwnerOfEvent(userId, eventId);
+        log.info("Getting requests for event with id {} by user with id {} - Finished", eventId, userId);
+        return requests;
+    }
+
+    @PatchMapping("/{eventId}/requests")
+    public EventRequestStatusUpdateResult updateRequests(@PathVariable Integer userId, @PathVariable Integer eventId, @RequestBody EventRequestStatusUpdateRequest requestStatusUpdateRequest) {
+        log.info("Updating requests for event with id {} by user with id {} - Started", eventId, userId);
+        EventRequestStatusUpdateResult updated = requestService.updateRequests(userId, eventId, requestStatusUpdateRequest);
+        log.info("Updating requests for event with id {} by user with id {} - Finished", eventId, userId);
+        return updated;
     }
 }
