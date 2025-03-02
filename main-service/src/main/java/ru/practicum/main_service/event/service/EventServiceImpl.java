@@ -1,6 +1,7 @@
 package ru.practicum.main_service.event.service;
 
 import client.RestStatClient;
+import exception.InvalidRequestException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +22,7 @@ import ru.practicum.main_service.user.model.User;
 import ru.practicum.main_service.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -32,7 +34,7 @@ public class EventServiceImpl implements EventService {
     private final UserRepository userRepository;
     private final LocationRepository locationRepository;
     private final EventMapper eventMapper;
-    private final RestStatClient restStatClient = new RestStatClient("http://stat-service:9090");
+    private final RestStatClient restStatClient;
 
     @Override
     public List<EventShortDto> getEventsByUser(Integer userId, Integer from, Integer size) {
@@ -112,11 +114,6 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException(String.format("Event with id=%d was not found", eventId)));
 
-        if (updateEventAdminRequest.getStateAction() != null) {
-            if ((event.getPublishedOn() != null) && updateEventAdminRequest.getEventDate().isAfter(event.getPublishedOn().minusHours(1))) {
-                throw new DataIntegrityViolationException("Event date should be in 1 hour before published");
-            }
-        }
         if (updateEventAdminRequest.getStateAction() == StateActionForAdmin.PUBLISH_EVENT && event.getState() != EventState.PENDING) {
             throw new DataIntegrityViolationException("Event should be in PENDING state");
         }
@@ -131,6 +128,36 @@ public class EventServiceImpl implements EventService {
             if (updateEventAdminRequest.getStateAction().equals(StateActionForAdmin.REJECT_EVENT)) {
                 event.setState(EventState.CANCELED);
             }
+        }
+
+        if (updateEventAdminRequest.getAnnotation() != null) {
+            event.setAnnotation(updateEventAdminRequest.getAnnotation());
+        }
+        if (updateEventAdminRequest.getCategory() != null) {
+            Category category = categoryRepository.findById(updateEventAdminRequest.getCategory())
+                    .orElseThrow(() -> new NotFoundException(String.format("Category with id=%d was not found", updateEventAdminRequest.getCategory())));
+            event.setCategory(category);
+        }
+        if (updateEventAdminRequest.getDescription() != null) {
+            event.setDescription(updateEventAdminRequest.getDescription());
+        }
+        if (updateEventAdminRequest.getEventDate() != null) {
+            event.setEventDate(updateEventAdminRequest.getEventDate());
+        }
+        if (updateEventAdminRequest.getLocation() != null) {
+            event.setLocation(locationRepository.save(updateEventAdminRequest.getLocation()));
+        }
+        if (updateEventAdminRequest.getPaid() != null) {
+            event.setPaid(updateEventAdminRequest.getPaid());
+        }
+        if (updateEventAdminRequest.getParticipantLimit() != null) {
+            event.setParticipantLimit(updateEventAdminRequest.getParticipantLimit());
+        }
+        if (updateEventAdminRequest.getRequestModeration() != null) {
+            event.setRequestModeration(updateEventAdminRequest.getRequestModeration());
+        }
+        if (updateEventAdminRequest.getTitle() != null) {
+            event.setTitle(updateEventAdminRequest.getTitle());
         }
 
         return eventMapper.toEventFullDto(eventRepository.save(event));
@@ -210,6 +237,7 @@ public class EventServiceImpl implements EventService {
     private List<EventFullDto> addViews(List<EventFullDto> events) {
         Map<String, EventFullDto> eventDtoMap = new HashMap<>();
         List<String> uris = new ArrayList<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         LocalDateTime earlyPublished = LocalDateTime.now().minusHours(1);
         for (EventFullDto event : events) {
@@ -223,9 +251,20 @@ public class EventServiceImpl implements EventService {
                 }
             }
         }
-        restStatClient.getStats(earlyPublished.toString(), LocalDateTime.now().toString(), uris, true)
-                .stream()
-                .peek(viewStatsDto -> eventDtoMap.get(viewStatsDto.getUri()).setViews(viewStatsDto.getHits()));
+        String start = earlyPublished.format(formatter);
+        String end = LocalDateTime.now().format(formatter);
+
+        try {
+            restStatClient.getStats(start, end, uris, true)
+                    .forEach(viewStatsDto -> {
+                        EventFullDto eventDto = eventDtoMap.get(viewStatsDto.getUri());
+                        if (eventDto != null) {
+                            eventDto.setViews(viewStatsDto.getHits());
+                        }
+                    });
+        } catch (Exception e) {
+            throw new InvalidRequestException(e.getMessage());
+        }
         return eventDtoMap.values().stream().toList();
     }
 

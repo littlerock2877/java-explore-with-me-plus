@@ -22,7 +22,7 @@ import java.util.List;
 @Slf4j
 public class EventPublicController {
     private final EventService eventService;
-    private final RestStatClient restStatClient = new RestStatClient("http://stat-service:9090");
+    private final RestStatClient restStatClient;
 
     @GetMapping
     public List<EventShortDto> publicGetEvents(@RequestParam(required = false) String text,
@@ -30,7 +30,7 @@ public class EventPublicController {
                                                @RequestParam(required = false) Boolean paid,
                                                @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
                                                @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
-                                               @RequestParam(required = false) Boolean onlyAvailable,
+                                               @RequestParam(defaultValue = "false") Boolean onlyAvailable,
                                                @RequestParam(required = false) EventSort sort,
                                                @RequestParam(defaultValue = "0") Integer from,
                                                @RequestParam(defaultValue = "10") Integer size,
