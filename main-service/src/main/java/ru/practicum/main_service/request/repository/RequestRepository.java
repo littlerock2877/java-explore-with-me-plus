@@ -3,7 +3,6 @@ package ru.practicum.main_service.request.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import ru.practicum.main_service.request.dto.RequestDto;
 import ru.practicum.main_service.request.model.Request;
 import java.util.List;
 import java.util.Optional;
