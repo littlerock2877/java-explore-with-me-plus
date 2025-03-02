@@ -11,4 +11,10 @@ public interface RequestService {
     List<RequestDto> getRequestsByOwnerOfEvent(Integer userId, Integer eventId);
 
     EventRequestStatusUpdateResult updateRequests(Integer userId, Integer eventId, EventRequestStatusUpdateRequest requestStatusUpdateRequest);
+
+    RequestDto createRequest(Integer userId, Integer eventId);
+
+    List<RequestDto> getCurrentUserRequests(Integer userId);
+
+    RequestDto cancelRequests(Integer userId, Integer requestId);
 }
