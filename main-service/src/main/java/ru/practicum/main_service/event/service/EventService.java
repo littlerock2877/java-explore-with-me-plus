@@ -25,5 +25,4 @@ public interface EventService {
     List<EventShortDto> publicGetAllEvents(EventRequestParam eventRequestParam);
 
     EventFullDto publicGetEvent(Integer eventId);
-    
 }
