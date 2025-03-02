@@ -12,6 +12,7 @@ import ru.practicum.main_service.event.model.Event;
 import ru.practicum.main_service.user.mapper.UserMapper;
 import ru.practicum.main_service.user.model.User;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -71,5 +72,9 @@ public class EventMapper {
                 event.getTitle(),
                 event.getViews()
         );
+    }
+
+    public List<EventFullDto> toEventFullDto(List<Event> adminEvents) {
+        return adminEvents.stream().map(this::toEventFullDto).toList();
     }
 }

@@ -1,6 +1,8 @@
 package client;
 
 import exception.InvalidRequestException;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,11 +18,10 @@ import java.util.List;
 @Component
 public class RestStatClient implements StatClient {
 
-    private final String statUrl;
     private final RestClient restClient;
+    private final String statUrl;
 
-
-    public RestStatClient(RestClient restClient, String statUrl) {
+    public RestStatClient(@Value("${client.url}") String statUrl) {
         this.statUrl = statUrl;
         this.restClient = RestClient.builder()
                 .baseUrl(statUrl)
@@ -41,19 +42,23 @@ public class RestStatClient implements StatClient {
 
     @Override
     public List<ViewStatsDto> getStats(String start, String end, List<String> uris, Boolean unique) {
-        String encodeStart = URLEncoder.encode(start, StandardCharsets.UTF_8);
-        String encodeEnd = URLEncoder.encode(end, StandardCharsets.UTF_8);
-        return restClient.get()
-                .uri(uriBuilder -> uriBuilder.path("/stats")
-                        .queryParam("start", encodeStart)
-                        .queryParam("end", encodeEnd)
-                        .queryParam("uris", uris)
-                        .queryParam("unique", unique)
-                        .build())
-                .retrieve()
-                .onStatus(status -> status != HttpStatus.OK, (request, response) -> {
-                    throw new InvalidRequestException(response.getStatusCode().value() + ": " + response.getBody());
-                })
-                .body(ParameterizedTypeReference.forType(List.class));
+        try {
+            String encodeStart = URLEncoder.encode(start, StandardCharsets.UTF_8);
+            String encodeEnd = URLEncoder.encode(end, StandardCharsets.UTF_8);
+            return restClient.get()
+                    .uri(uriBuilder -> uriBuilder.path("/stats")
+                            .queryParam("start", encodeStart)
+                            .queryParam("end", encodeEnd)
+                            .queryParam("uris", uris)
+                            .queryParam("unique", unique)
+                            .build())
+                    .retrieve()
+                    .onStatus(status -> status != HttpStatus.OK, (request, response) -> {
+                        throw new InvalidRequestException(response.getStatusCode().value() + ": " + response.getBody());
+                    })
+                    .body(ParameterizedTypeReference.forType(List.class));
+        } catch (Exception e) {
+            throw new InvalidRequestException(e.getMessage());
+        }
     }
 }
