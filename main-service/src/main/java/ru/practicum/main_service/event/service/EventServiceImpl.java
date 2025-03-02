@@ -17,10 +17,11 @@ import ru.practicum.main_service.event.mapper.EventMapper;
 import ru.practicum.main_service.event.model.Event;
 import ru.practicum.main_service.event.repository.EventRepository;
 import ru.practicum.main_service.event.repository.LocationRepository;
+import ru.practicum.main_service.exception.EventDateValidationException;
 import ru.practicum.main_service.exception.NotFoundException;
 import ru.practicum.main_service.user.model.User;
 import ru.practicum.main_service.user.repository.UserRepository;
-
+import java.security.InvalidParameterException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -45,7 +46,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventFullDto createEvent(Integer userId, NewEventDto newEventDto) {
         if (newEventDto.getEventDate() != null && !newEventDto.getEventDate().isAfter(LocalDateTime.now().plus(2, ChronoUnit.HOURS))) {
-            throw new DataIntegrityViolationException("Event date should be in 2+ hours after now");
+            throw new EventDateValidationException("Event date should be in 2+ hours after now");
         }
         Category category = categoryRepository.findById(newEventDto.getCategory())
                 .orElseThrow(() -> new NotFoundException(String.format("Category with id=%d was not found", newEventDto.getCategory())));
@@ -53,6 +54,15 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new NotFoundException(String.format("User with id=%d was not found", userId)));
         Event event = eventMapper.toModelByNew(newEventDto, category, user);
         event.setLocation(locationRepository.save(newEventDto.getLocation()));
+        if (newEventDto.getPaid() == null) {
+            event.setPaid(false);
+        }
+        if (newEventDto.getParticipantLimit() == null) {
+            event.setParticipantLimit(0L);
+        }
+        if (newEventDto.getRequestModeration() == null) {
+            event.setRequestModeration(true);
+        }
         return eventMapper.toEventFullDto(eventRepository.save(event));
     }
 
@@ -66,8 +76,11 @@ public class EventServiceImpl implements EventService {
     public EventFullDto updateEvent(Integer userId, Integer eventId, UpdateEventUserDto updateEventUserDto) {
         Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
                 .orElseThrow(() -> new NotFoundException(String.format("Event with id=%d was not found", eventId)));
+        if (event.getPublishedOn() != null) {
+            throw new InvalidParameterException("Event is already published");
+        }
         if (updateEventUserDto.getEventDate() != null && !updateEventUserDto.getEventDate().isAfter(LocalDateTime.now().plus(2, ChronoUnit.HOURS))) {
-            throw new DataIntegrityViolationException("Event date should be in 2+ hours after now");
+            throw new EventDateValidationException("Event date should be in 2+ hours after now");
         }
         if (updateEventUserDto.getAnnotation() != null) {
             event.setAnnotation(updateEventUserDto.getAnnotation());
@@ -165,7 +178,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventFullDto> adminGetAllEvents(AdminEventParams adminEventParams) {
-        Pageable page = PageRequest.of(adminEventParams.getFrom(), adminEventParams.getSize());
+         Pageable page = PageRequest.of(adminEventParams.getFrom(), adminEventParams.getSize());
 
         if (adminEventParams.getRangeStart() == null || adminEventParams.getRangeEnd() == null) {
             adminEventParams.setRangeStart(LocalDateTime.now());

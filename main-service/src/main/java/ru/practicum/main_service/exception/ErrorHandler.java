@@ -46,6 +46,18 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleEventDateValidationException(final EventDateValidationException e) {
+        log.error("EventDateValidationException with message {} was thrown", e.getMessage());
+        Map map = new LinkedHashMap<String, String>();
+        map.put("status", HttpStatus.BAD_REQUEST.name());
+        map.put("reason", "Incorrectly made request.");
+        map.put("message", e.getMessage());
+        map.put("timestamp", LocalDateTime.now().format(formatter));
+        return map;
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleMissingSe(final MissingServletRequestParameterException e) {
         log.error("MissingServletRequestParameterException with message {} was thrown", e.getMessage());
         Map map = new LinkedHashMap<String, String>();

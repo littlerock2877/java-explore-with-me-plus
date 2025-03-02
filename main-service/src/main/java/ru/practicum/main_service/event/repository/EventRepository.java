@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import ru.practicum.main_service.categories.model.Category;
 import ru.practicum.main_service.event.model.Event;
 
 import java.time.LocalDateTime;
@@ -46,4 +47,6 @@ public interface EventRepository extends JpaRepository<Event, Integer> {
                                  LocalDateTime rangeEnd,
                                  Boolean onlyAvailable,
                                  Pageable pageable);
+
+    Optional<Event> findByCategory(Category category);
 }
