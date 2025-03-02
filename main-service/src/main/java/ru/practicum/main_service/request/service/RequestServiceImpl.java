@@ -80,8 +80,8 @@ public class RequestServiceImpl implements RequestService {
             throw new InvalidParameterException("Can't create request by initiator");
         }
 
-        if (event.getPublishedOn() != null) {
-            throw new InvalidParameterException("Event is already published");
+        if (event.getPublishedOn() == null) {
+            throw new InvalidParameterException("Event is not published");
         }
         List<Request> requests = requestRepository.findAllByEvent(eventId);
 

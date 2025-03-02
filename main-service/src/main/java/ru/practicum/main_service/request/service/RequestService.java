@@ -10,11 +10,14 @@ import java.util.List;
 public interface RequestService {
     List<RequestDto> getRequestsByOwnerOfEvent(Integer userId, Integer eventId);
 
+    @Transactional
     EventRequestStatusUpdateResult updateRequests(Integer userId, Integer eventId, EventRequestStatusUpdateRequest requestStatusUpdateRequest);
 
+    @Transactional
     RequestDto createRequest(Integer userId, Integer eventId);
 
     List<RequestDto> getCurrentUserRequests(Integer userId);
 
+    @Transactional
     RequestDto cancelRequests(Integer userId, Integer requestId);
 }
