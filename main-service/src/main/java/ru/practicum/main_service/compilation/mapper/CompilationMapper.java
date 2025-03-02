@@ -35,6 +35,8 @@ public class CompilationMapper {
     public CompilationDto map(Compilation comp) {
         return CompilationDto.builder()
                 .id(comp.getId())
+                .pinned(comp.isPinned())
+                .title(comp.getTitle())
                 .events(mapEvents(comp.getEvents()))
                 .build();
     }
