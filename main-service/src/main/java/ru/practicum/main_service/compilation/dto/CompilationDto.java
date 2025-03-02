@@ -14,7 +14,7 @@ import java.util.Collection;
 @Builder(toBuilder = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CompilationDto {
-    int id;
+    Integer id;
     Collection<EventShortDto> events;
     boolean pinned;
     String title;

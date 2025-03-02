@@ -36,14 +36,14 @@ public class CompilationAdminController {
 
     @DeleteMapping("/{compId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable int compId) {
+    public void delete(@PathVariable Integer compId) {
         log.info("Deleting compilation with id {} - Started.", compId);
         service.delete(compId);
         log.info("Deleting compilation with id {} - Finished.", compId);
     }
 
     @PatchMapping("/{compId}")
-    public CompilationDto update(@PathVariable int compId,
+    public CompilationDto update(@PathVariable Integer compId,
                                  @Valid @RequestBody UpdateCompilationDto dto) {
         log.info("Updating compilation with id {} - Started.", compId);
         CompilationDto updatedComp = service.update(compId, dto);

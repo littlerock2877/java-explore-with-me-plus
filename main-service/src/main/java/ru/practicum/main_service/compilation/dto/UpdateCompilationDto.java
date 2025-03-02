@@ -16,6 +16,6 @@ public class UpdateCompilationDto {
     @UniqueElements(message = "All events must be unique")
     Collection<Integer> events;
     boolean pinned;
-    @Size(max = 50)
+    @Size(min = 1, max = 50)
     String title;
 }

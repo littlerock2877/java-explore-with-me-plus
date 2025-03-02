@@ -33,7 +33,7 @@ public class CompilationPublicController {
     }
 
     @GetMapping("/{compId}")
-    public CompilationDto getCompilation(@PathVariable int compId) {
+    public CompilationDto getCompilation(@PathVariable Integer compId) {
         log.info("Getting compilation with id {} - Started.", compId);
         CompilationDto compilation = service.getById(compId);
         log.info("Getting compilation with id {} - Finished.", compId);

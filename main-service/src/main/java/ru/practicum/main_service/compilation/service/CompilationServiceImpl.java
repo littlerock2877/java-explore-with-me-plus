@@ -14,6 +14,7 @@ import ru.practicum.main_service.event.model.Event;
 import ru.practicum.main_service.event.repository.EventRepository;
 import ru.practicum.main_service.exception.NotFoundException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -33,7 +34,7 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
-    public CompilationDto getById(int id) {
+    public CompilationDto getById(Integer id) {
         return mapper.map(compRepo
                 .findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Compilation with id %s is not found", id))));
@@ -42,12 +43,17 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     public CompilationDto add(NewCompilationDto dto) {
         Compilation newComp = mapper.map(dto);
-        newComp.setEvents(eventRepo.findAllById(dto.getEvents()));
+        if (dto.getEvents() != null) {
+            newComp.setEvents(eventRepo.findAllById(dto.getEvents()));
+        } else {
+            newComp.setEvents(new ArrayList<>());
+        }
+        newComp = compRepo.save(newComp);
         return mapper.map(newComp);
     }
 
     @Override
-    public CompilationDto update(int id, UpdateCompilationDto dto) {
+    public CompilationDto update(Integer id, UpdateCompilationDto dto) {
         Compilation oldComp = compRepo.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Compilation with id %s is not found", id)));
         updater(oldComp, dto);
@@ -55,7 +61,7 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
-    public void delete(int id) {
+    public void delete(Integer id) {
         if (compRepo.existsById(id)) {
             compRepo.deleteById(id);
         } else {

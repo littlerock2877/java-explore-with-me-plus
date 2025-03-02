@@ -12,13 +12,14 @@ public interface CompilationService {
 
     List<CompilationDto> getCompilations(Boolean pinned, int from, int size);
 
-    CompilationDto getById(int id);
+    CompilationDto getById(Integer id);
 
     @Transactional
     CompilationDto add(NewCompilationDto dto);
 
     @Transactional
-    CompilationDto update(int id, UpdateCompilationDto dto);
+    CompilationDto update(Integer id, UpdateCompilationDto dto);
 
-    void delete(int id);
+    @Transactional
+    void delete(Integer id);
 }
