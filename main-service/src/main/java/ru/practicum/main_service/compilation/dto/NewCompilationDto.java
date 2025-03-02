@@ -18,6 +18,6 @@ public class NewCompilationDto {
     Collection<Integer> events;
     boolean pinned;
     @NotBlank(message = "Compilation name should not be blank.")
-    @Size(max = 50)
+    @Size(min = 1, max = 50)
     String title;
 }

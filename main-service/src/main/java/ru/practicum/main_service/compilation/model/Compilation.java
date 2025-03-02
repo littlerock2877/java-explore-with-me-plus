@@ -35,6 +35,8 @@ public class Compilation {
             inverseJoinColumns = { @JoinColumn(name = "event_id") }
     )
     Collection<Event> events;
+    @Column(name = "pinned")
     boolean pinned;
+    @Column(name = "title")
     String title;
 }
