@@ -4,9 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.security.InvalidParameterException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
@@ -36,6 +39,30 @@ public class ErrorHandler {
         Map map = new LinkedHashMap<String, String>();
         map.put("status", HttpStatus.BAD_REQUEST.name());
         map.put("reason", "Incorrectly made request.");
+        map.put("message", e.getMessage());
+        map.put("timestamp", LocalDateTime.now().format(formatter));
+        return map;
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleMissingSe(final MissingServletRequestParameterException e) {
+        log.error("MissingServletRequestParameterException with message {} was thrown", e.getMessage());
+        Map map = new LinkedHashMap<String, String>();
+        map.put("status", HttpStatus.BAD_REQUEST.name());
+        map.put("reason", "Incorrectly made request.");
+        map.put("message", e.getMessage());
+        map.put("timestamp", LocalDateTime.now().format(formatter));
+        return map;
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Map<String, String> handleInvalidParameter(final InvalidParameterException e) {
+        log.error("InvalidParameterException with message {} was thrown", e.getMessage());
+        Map map = new LinkedHashMap<String, String>();
+        map.put("status", HttpStatus.CONFLICT.name());
+        map.put("reason", "Integrity constraint has been violated.");
         map.put("message", e.getMessage());
         map.put("timestamp", LocalDateTime.now().format(formatter));
         return map;

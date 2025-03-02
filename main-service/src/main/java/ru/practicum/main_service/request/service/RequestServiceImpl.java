@@ -12,7 +12,9 @@ import ru.practicum.main_service.request.enums.RequestStatus;
 import ru.practicum.main_service.request.mapper.RequestMapper;
 import ru.practicum.main_service.request.model.Request;
 import ru.practicum.main_service.request.repository.RequestRepository;
+import ru.practicum.main_service.user.repository.UserRepository;
 import java.security.InvalidParameterException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -20,6 +22,7 @@ import java.util.List;
 public class RequestServiceImpl implements RequestService {
     private final RequestRepository requestRepository;
     private final EventRepository eventRepository;
+    private final UserRepository userRepository;
     private final RequestMapper requestMapper;
 
     @Override
@@ -64,5 +67,48 @@ public class RequestServiceImpl implements RequestService {
             result.setRejectedRequests(requestsToUpdate.stream().map(request -> requestMapper.toParticipationRequestDto(request)).toList());
         }
         return result;
+    }
+
+    @Override
+    public RequestDto createRequest(Integer userId, Integer eventId) {
+        if (requestRepository.existsByRequesterAndEvent(userId, eventId)) {
+            throw new InvalidParameterException("Request already exists");
+        }
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException(String.format("Event with id=%d was not found", eventId)));
+        if (event.getInitiator().getId().equals(userId)) {
+            throw new InvalidParameterException("Can't create request by initiator");
+        }
+
+        if (event.getPublishedOn() == null) {
+            throw new InvalidParameterException("Event is not published");
+        }
+        List<Request> requests = requestRepository.findAllByEvent(eventId);
+
+        if (!event.getRequestModeration() && requests.size() >= event.getParticipantLimit()) {
+            throw new InvalidParameterException("Member limit exceeded ");
+        }
+
+        Request request = new Request();
+        request.setCreated(LocalDateTime.now());
+        request.setEvent(eventId);
+        request.setRequester(userId);
+        request.setStatus(RequestStatus.PENDING);
+        return requestMapper.toRequestDto(requestRepository.save(request));
+    }
+
+    @Override
+    public List<RequestDto> getCurrentUserRequests(Integer userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(String.format("User with id=%d was not found", userId)));
+        return requestRepository.findAllByRequester(userId).stream().map(request -> requestMapper.toRequestDto(request)).toList();
+    }
+
+    @Override
+    public RequestDto cancelRequests(Integer userId, Integer requestId) {
+        Request request = requestRepository.findByRequesterAndId(userId, requestId)
+                .orElseThrow(() -> new NotFoundException(String.format("Request with id=%d was not found", requestId)));
+        request.setStatus(RequestStatus.CANCELED);
+        return requestMapper.toRequestDto(requestRepository.save(request));
     }
 }

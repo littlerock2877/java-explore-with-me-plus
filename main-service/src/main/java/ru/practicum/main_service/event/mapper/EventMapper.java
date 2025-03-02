@@ -53,7 +53,7 @@ public class EventMapper {
                 newEventDto.getLocation(),
                 newEventDto.getPaid(),
                 newEventDto.getParticipantLimit(),
-                newEventDto.getEventDate(),
+                null,
                 newEventDto.getRequestModeration(),
                 EventState.PENDING,
                 newEventDto.getTitle(),
