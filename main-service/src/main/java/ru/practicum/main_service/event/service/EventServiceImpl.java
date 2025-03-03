@@ -178,11 +178,12 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventFullDto> adminGetAllEvents(AdminEventParams adminEventParams) {
-         Pageable page = PageRequest.of(adminEventParams.getFrom(), adminEventParams.getSize());
-
-        if (adminEventParams.getRangeStart() == null || adminEventParams.getRangeEnd() == null) {
+        Pageable page = PageRequest.of(adminEventParams.getFrom(), adminEventParams.getSize());
+        if (adminEventParams.getRangeStart() == null) {
             adminEventParams.setRangeStart(LocalDateTime.now());
-            adminEventParams.setRangeEnd(adminEventParams.getRangeStart().plusYears(1));
+        }
+        if (adminEventParams.getRangeEnd() == null) {
+            adminEventParams.setRangeEnd(LocalDateTime.now().plusYears(1));
         }
         List<EventFullDto> events = eventMapper.toEventFullDto(eventRepository.findAdminEvents(
                 adminEventParams.getUsers(),
@@ -194,7 +195,7 @@ public class EventServiceImpl implements EventService {
         if (events.isEmpty()) {
             return List.of();
         }
-        return addViews(events);
+        return events;
     }
 
     @Override
