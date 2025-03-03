@@ -1,12 +1,12 @@
 package ru.practicum.main_service.event.service;
 
 import client.RestStatClient;
-import exception.InvalidRequestException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.main_service.categories.model.Category;
 import ru.practicum.main_service.categories.repository.CategoryRepository;
 import ru.practicum.main_service.event.dto.*;
@@ -200,7 +200,11 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventShortDto> publicGetAllEvents(EventRequestParam eventRequestParam) {
-        Pageable page = PageRequest.of(eventRequestParam.getFrom(), eventRequestParam.getSize());
+        Pageable page = PageRequest.of(eventRequestParam.getFrom() / eventRequestParam.getSize(), eventRequestParam.getSize());
+
+        if (eventRequestParam.getRangeStart().isAfter(eventRequestParam.getRangeEnd())) {
+            throw new EventDateValidationException("End date should be before start date");
+        }
 
         if (eventRequestParam.getRangeStart() == null || eventRequestParam.getRangeEnd() == null) {
             eventRequestParam.setRangeStart(LocalDateTime.now());
@@ -248,38 +252,23 @@ public class EventServiceImpl implements EventService {
         return addViews(List.of(eventFullDto)).getFirst();
     }
 
-    private List<EventFullDto> addViews(List<EventFullDto> events) {
-        Map<String, EventFullDto> eventDtoMap = new HashMap<>();
-        List<String> uris = new ArrayList<>();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
-        LocalDateTime earlyPublished = LocalDateTime.now().minusHours(1);
-        for (EventFullDto event : events) {
-            String uri = "/events/" + event.getId();
-            eventDtoMap.put(uri, event);
-            uris.add(uri);
-            if (event.getPublishedOn() != null) {
-                LocalDateTime dtoPublishDate = event.getPublishedOn();
-                if (dtoPublishDate.isBefore(earlyPublished)) {
-                    earlyPublished = dtoPublishDate;
-                }
-            }
-        }
-        String start = earlyPublished.format(formatter);
-        String end = LocalDateTime.now().format(formatter);
-
-        try {
-            restStatClient.getStats(start, end, uris, true)
-                    .forEach(viewStatsDto -> {
-                        EventFullDto eventDto = eventDtoMap.get(viewStatsDto.getUri());
-                        if (eventDto != null) {
-                            eventDto.setViews(viewStatsDto.getHits());
-                        }
-                    });
-        } catch (Exception e) {
-            throw new InvalidRequestException(e.getMessage());
-        }
-        return eventDtoMap.values().stream().toList();
+    private List<ViewStatsDto> getStats(String start, String end, List<String> uris) {
+        return restStatClient.getStats(start, end, uris, false);
     }
 
+    private List<EventFullDto> addViews(List<EventFullDto> events) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        for (EventFullDto event : events) {
+            String start = event.getCreatedOn().format(formatter);
+            String end = LocalDateTime.now().format(formatter);
+            var uris = List.of("/events/" + event.getId());
+            var stats = getStats(start, end, uris);
+            if (stats.size() == 1) {
+                event.setViews(stats.get(0).getHits());
+            } else {
+                event.setViews(0L);
+            }
+        }
+        return events;
+    }
 }

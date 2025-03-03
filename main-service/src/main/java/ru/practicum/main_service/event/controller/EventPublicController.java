@@ -37,8 +37,8 @@ public class EventPublicController {
                                                HttpServletRequest request) {
         EventRequestParam reqParam = new EventRequestParam(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
         log.info("Getting public events - Started");
-        List<EventShortDto> events = eventService.publicGetAllEvents(reqParam);
         saveHit(request);
+        List<EventShortDto> events = eventService.publicGetAllEvents(reqParam);
         log.info("Getting public events - Finished");
         return events;
     }
