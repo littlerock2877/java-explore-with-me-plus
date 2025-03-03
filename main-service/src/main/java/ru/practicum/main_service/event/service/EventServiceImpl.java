@@ -202,14 +202,15 @@ public class EventServiceImpl implements EventService {
     public List<EventShortDto> publicGetAllEvents(EventRequestParam eventRequestParam) {
         Pageable page = PageRequest.of(eventRequestParam.getFrom() / eventRequestParam.getSize(), eventRequestParam.getSize());
 
-        if (eventRequestParam.getRangeStart().isAfter(eventRequestParam.getRangeEnd())) {
-            throw new EventDateValidationException("End date should be before start date");
-        }
-
         if (eventRequestParam.getRangeStart() == null || eventRequestParam.getRangeEnd() == null) {
             eventRequestParam.setRangeStart(LocalDateTime.now());
             eventRequestParam.setRangeEnd(eventRequestParam.getRangeStart().plusYears(1));
         }
+
+        if (eventRequestParam.getRangeStart().isAfter(eventRequestParam.getRangeEnd())) {
+            throw new EventDateValidationException("End date should be before start date");
+        }
+
         List<Event> events = eventRepository.findPublicEvents(
                 eventRequestParam.getText(),
                 eventRequestParam.getCategory(),
@@ -264,9 +265,9 @@ public class EventServiceImpl implements EventService {
             var uris = List.of("/events/" + event.getId());
             var stats = getStats(start, end, uris);
             if (stats.size() == 1) {
-                event.setViews(stats.get(0).getHits());
+                event.setViews(event.getViews() + 1);
             } else {
-                event.setViews(0L);
+                event.setViews(1L);
             }
         }
         return events;
