@@ -12,7 +12,6 @@ import ru.practicum.main_service.event.dto.EventRequestParam;
 import ru.practicum.main_service.event.dto.EventShortDto;
 import ru.practicum.main_service.event.enums.EventSort;
 import ru.practicum.main_service.event.service.EventService;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -38,7 +37,6 @@ public class EventPublicController {
         EventRequestParam reqParam = new EventRequestParam(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
         log.info("Getting public events - Started");
         List<EventShortDto> events = eventService.publicGetAllEvents(reqParam);
-        saveHit(request);
         log.info("Getting public events - Finished");
         return events;
     }

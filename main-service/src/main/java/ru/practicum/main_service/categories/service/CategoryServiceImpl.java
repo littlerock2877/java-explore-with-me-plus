@@ -9,8 +9,10 @@ import ru.practicum.main_service.categories.dto.NewCategoryDto;
 import ru.practicum.main_service.categories.mapper.CategoryMapper;
 import ru.practicum.main_service.categories.model.Category;
 import ru.practicum.main_service.categories.repository.CategoryRepository;
+import ru.practicum.main_service.event.repository.EventRepository;
 import ru.practicum.main_service.exception.NotFoundException;
 
+import java.security.InvalidParameterException;
 import java.util.List;
 
 @Service
@@ -18,6 +20,7 @@ import java.util.List;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final EventRepository eventRepository;
     private final CategoryMapper categoryMapper;
 
     @Override
@@ -36,6 +39,9 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void deleteCategory(Integer catId) {
         Category category = getCategoryById(catId);
+        if (eventRepository.findByCategory(category).isPresent()) {
+            throw new InvalidParameterException("Category is related to event");
+        }
         categoryRepository.deleteById(catId);
     }
 

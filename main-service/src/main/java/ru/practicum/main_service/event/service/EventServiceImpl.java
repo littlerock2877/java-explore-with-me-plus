@@ -1,12 +1,12 @@
 package ru.practicum.main_service.event.service;
 
 import client.RestStatClient;
-import exception.InvalidRequestException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.main_service.categories.model.Category;
 import ru.practicum.main_service.categories.repository.CategoryRepository;
 import ru.practicum.main_service.event.dto.*;
@@ -17,10 +17,11 @@ import ru.practicum.main_service.event.mapper.EventMapper;
 import ru.practicum.main_service.event.model.Event;
 import ru.practicum.main_service.event.repository.EventRepository;
 import ru.practicum.main_service.event.repository.LocationRepository;
+import ru.practicum.main_service.exception.EventDateValidationException;
 import ru.practicum.main_service.exception.NotFoundException;
 import ru.practicum.main_service.user.model.User;
 import ru.practicum.main_service.user.repository.UserRepository;
-
+import java.security.InvalidParameterException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -45,7 +46,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventFullDto createEvent(Integer userId, NewEventDto newEventDto) {
         if (newEventDto.getEventDate() != null && !newEventDto.getEventDate().isAfter(LocalDateTime.now().plus(2, ChronoUnit.HOURS))) {
-            throw new DataIntegrityViolationException("Event date should be in 2+ hours after now");
+            throw new EventDateValidationException("Event date should be in 2+ hours after now");
         }
         Category category = categoryRepository.findById(newEventDto.getCategory())
                 .orElseThrow(() -> new NotFoundException(String.format("Category with id=%d was not found", newEventDto.getCategory())));
@@ -53,6 +54,15 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new NotFoundException(String.format("User with id=%d was not found", userId)));
         Event event = eventMapper.toModelByNew(newEventDto, category, user);
         event.setLocation(locationRepository.save(newEventDto.getLocation()));
+        if (newEventDto.getPaid() == null) {
+            event.setPaid(false);
+        }
+        if (newEventDto.getParticipantLimit() == null) {
+            event.setParticipantLimit(0L);
+        }
+        if (newEventDto.getRequestModeration() == null) {
+            event.setRequestModeration(true);
+        }
         return eventMapper.toEventFullDto(eventRepository.save(event));
     }
 
@@ -66,8 +76,11 @@ public class EventServiceImpl implements EventService {
     public EventFullDto updateEvent(Integer userId, Integer eventId, UpdateEventUserDto updateEventUserDto) {
         Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
                 .orElseThrow(() -> new NotFoundException(String.format("Event with id=%d was not found", eventId)));
+        if (event.getPublishedOn() != null) {
+            throw new InvalidParameterException("Event is already published");
+        }
         if (updateEventUserDto.getEventDate() != null && !updateEventUserDto.getEventDate().isAfter(LocalDateTime.now().plus(2, ChronoUnit.HOURS))) {
-            throw new DataIntegrityViolationException("Event date should be in 2+ hours after now");
+            throw new EventDateValidationException("Event date should be in 2+ hours after now");
         }
         if (updateEventUserDto.getAnnotation() != null) {
             event.setAnnotation(updateEventUserDto.getAnnotation());
@@ -166,10 +179,11 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventFullDto> adminGetAllEvents(AdminEventParams adminEventParams) {
         Pageable page = PageRequest.of(adminEventParams.getFrom(), adminEventParams.getSize());
-
-        if (adminEventParams.getRangeStart() == null || adminEventParams.getRangeEnd() == null) {
+        if (adminEventParams.getRangeStart() == null) {
             adminEventParams.setRangeStart(LocalDateTime.now());
-            adminEventParams.setRangeEnd(adminEventParams.getRangeStart().plusYears(1));
+        }
+        if (adminEventParams.getRangeEnd() == null) {
+            adminEventParams.setRangeEnd(LocalDateTime.now().plusYears(1));
         }
         List<EventFullDto> events = eventMapper.toEventFullDto(eventRepository.findAdminEvents(
                 adminEventParams.getUsers(),
@@ -181,17 +195,22 @@ public class EventServiceImpl implements EventService {
         if (events.isEmpty()) {
             return List.of();
         }
-        return addViews(events);
+        return events;
     }
 
     @Override
     public List<EventShortDto> publicGetAllEvents(EventRequestParam eventRequestParam) {
-        Pageable page = PageRequest.of(eventRequestParam.getFrom(), eventRequestParam.getSize());
+        Pageable page = PageRequest.of(eventRequestParam.getFrom() / eventRequestParam.getSize(), eventRequestParam.getSize());
 
         if (eventRequestParam.getRangeStart() == null || eventRequestParam.getRangeEnd() == null) {
             eventRequestParam.setRangeStart(LocalDateTime.now());
             eventRequestParam.setRangeEnd(eventRequestParam.getRangeStart().plusYears(1));
         }
+
+        if (eventRequestParam.getRangeStart().isAfter(eventRequestParam.getRangeEnd())) {
+            throw new EventDateValidationException("End date should be before start date");
+        }
+
         List<Event> events = eventRepository.findPublicEvents(
                 eventRequestParam.getText(),
                 eventRequestParam.getCategory(),
@@ -234,38 +253,23 @@ public class EventServiceImpl implements EventService {
         return addViews(List.of(eventFullDto)).getFirst();
     }
 
-    private List<EventFullDto> addViews(List<EventFullDto> events) {
-        Map<String, EventFullDto> eventDtoMap = new HashMap<>();
-        List<String> uris = new ArrayList<>();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
-        LocalDateTime earlyPublished = LocalDateTime.now().minusHours(1);
-        for (EventFullDto event : events) {
-            String uri = "/events/" + event.getId();
-            eventDtoMap.put(uri, event);
-            uris.add(uri);
-            if (event.getPublishedOn() != null) {
-                LocalDateTime dtoPublishDate = event.getPublishedOn();
-                if (dtoPublishDate.isBefore(earlyPublished)) {
-                    earlyPublished = dtoPublishDate;
-                }
-            }
-        }
-        String start = earlyPublished.format(formatter);
-        String end = LocalDateTime.now().format(formatter);
-
-        try {
-            restStatClient.getStats(start, end, uris, true)
-                    .forEach(viewStatsDto -> {
-                        EventFullDto eventDto = eventDtoMap.get(viewStatsDto.getUri());
-                        if (eventDto != null) {
-                            eventDto.setViews(viewStatsDto.getHits());
-                        }
-                    });
-        } catch (Exception e) {
-            throw new InvalidRequestException(e.getMessage());
-        }
-        return eventDtoMap.values().stream().toList();
+    private List<ViewStatsDto> getStats(String start, String end, List<String> uris) {
+        return restStatClient.getStats(start, end, uris, false);
     }
 
+    private List<EventFullDto> addViews(List<EventFullDto> events) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        for (EventFullDto event : events) {
+            String start = event.getCreatedOn().format(formatter);
+            String end = LocalDateTime.now().format(formatter);
+            var uris = List.of("/events/" + event.getId());
+            var stats = getStats(start, end, uris);
+            if (stats.size() == 1) {
+                event.setViews(event.getViews() + 1);
+            } else {
+                event.setViews(1L);
+            }
+        }
+        return events;
+    }
 }
