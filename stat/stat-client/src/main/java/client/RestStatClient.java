@@ -10,9 +10,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.ViewStatsDto;
-
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Component
@@ -43,12 +40,10 @@ public class RestStatClient implements StatClient {
     @Override
     public List<ViewStatsDto> getStats(String start, String end, List<String> uris, Boolean unique) {
         try {
-            String encodeStart = URLEncoder.encode(start, StandardCharsets.UTF_8);
-            String encodeEnd = URLEncoder.encode(end, StandardCharsets.UTF_8);
             return restClient.get()
                     .uri(uriBuilder -> uriBuilder.path("/stats")
-                            .queryParam("start", encodeStart)
-                            .queryParam("end", encodeEnd)
+                            .queryParam("start", start)
+                            .queryParam("end", end)
                             .queryParam("uris", uris)
                             .queryParam("unique", unique)
                             .build())

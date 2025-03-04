@@ -36,6 +36,7 @@ public class EventPublicController {
                                                HttpServletRequest request) {
         EventRequestParam reqParam = new EventRequestParam(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
         log.info("Getting public events - Started");
+        saveHit(request);
         List<EventShortDto> events = eventService.publicGetAllEvents(reqParam);
         log.info("Getting public events - Finished");
         return events;
@@ -45,8 +46,8 @@ public class EventPublicController {
     public EventFullDto publicGetEvent(@PathVariable("eventId") Integer eventId,
                                        HttpServletRequest request) {
         log.info("Getting public event with id {} - Started", eventId);
-        EventFullDto event = eventService.publicGetEvent(eventId);
         saveHit(request);
+        EventFullDto event = eventService.publicGetEvent(eventId);
         log.info("Getting public event with id {} - Finished", eventId);
         return event;
     }

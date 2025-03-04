@@ -23,7 +23,6 @@ import ru.practicum.main_service.user.model.User;
 import ru.practicum.main_service.user.repository.UserRepository;
 import java.security.InvalidParameterException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -235,9 +234,9 @@ public class EventServiceImpl implements EventService {
                         .toList();
             };
         }
-        addViews(events.stream()
-                .map(eventMapper::toEventFullDto)
-                .toList());
+        for (Event event : events) {
+            addViews("/events/" + event.getId(), event);
+        }
         return events.stream().map(eventMapper::toEventShortDto).toList();
     }
 
@@ -250,26 +249,25 @@ public class EventServiceImpl implements EventService {
             throw new NotFoundException(String.format("Event with id=%d was not published", eventId));
         }
         EventFullDto eventFullDto = eventMapper.toEventFullDto(event);
-        return addViews(List.of(eventFullDto)).getFirst();
+        addViews("/events/" + event.getId(), event);
+        return eventFullDto;
     }
 
     private List<ViewStatsDto> getStats(String start, String end, List<String> uris) {
         return restStatClient.getStats(start, end, uris, false);
     }
 
-    private List<EventFullDto> addViews(List<EventFullDto> events) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        for (EventFullDto event : events) {
-            String start = event.getCreatedOn().format(formatter);
-            String end = LocalDateTime.now().format(formatter);
-            var uris = List.of("/events/" + event.getId());
-            var stats = getStats(start, end, uris);
-            if (stats.size() == 1) {
-                event.setViews(event.getViews() + 1);
-            } else {
-                event.setViews(1L);
-            }
+    private static final String START = "1970-01-01 00:00:00";
+
+
+    private static final String END = "2500-12-31 23:59:59";
+
+    private void addViews(String uri, Event event) {
+        ViewStatsDto[] views = restStatClient.getStats(START, END, List.of(uri), false).toArray(new ViewStatsDto[0]);
+        if (views.length == 0) {
+            event.setViews(0L);
+        } else {
+            event.setViews(views[0].getHits());
         }
-        return events;
     }
 }
