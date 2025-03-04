@@ -51,7 +51,7 @@ public class RestStatClient implements StatClient {
                     .onStatus(status -> status != HttpStatus.OK, (request, response) -> {
                         throw new InvalidRequestException(response.getStatusCode().value() + ": " + response.getBody());
                     })
-                    .body(ParameterizedTypeReference.forType(List.class));
+                    .body(new ParameterizedTypeReference<List<ViewStatsDto>>() {});
         } catch (Exception e) {
             throw new InvalidRequestException(e.getMessage());
         }

@@ -35,6 +35,8 @@ public class EventServiceImpl implements EventService {
     private final LocationRepository locationRepository;
     private final EventMapper eventMapper;
     private final RestStatClient restStatClient;
+    private static final String START = "1970-01-01 00:00:00";
+    private static final String END = "3000-12-31 23:59:59";
 
     @Override
     public List<EventShortDto> getEventsByUser(Integer userId, Integer from, Integer size) {
@@ -252,15 +254,6 @@ public class EventServiceImpl implements EventService {
         addViews("/events/" + event.getId(), event);
         return eventFullDto;
     }
-
-    private List<ViewStatsDto> getStats(String start, String end, List<String> uris) {
-        return restStatClient.getStats(start, end, uris, false);
-    }
-
-    private static final String START = "1970-01-01 00:00:00";
-
-
-    private static final String END = "2500-12-31 23:59:59";
 
     private void addViews(String uri, Event event) {
         ViewStatsDto[] views = restStatClient.getStats(START, END, List.of(uri), false).toArray(new ViewStatsDto[0]);
