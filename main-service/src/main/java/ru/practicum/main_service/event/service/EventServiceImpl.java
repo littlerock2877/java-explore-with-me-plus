@@ -250,8 +250,8 @@ public class EventServiceImpl implements EventService {
         if (event.getState() != EventState.PUBLISHED) {
             throw new NotFoundException(String.format("Event with id=%d was not published", eventId));
         }
-        EventFullDto eventFullDto = eventMapper.toEventFullDto(event);
         addViews("/events/" + event.getId(), event);
+        EventFullDto eventFullDto = eventMapper.toEventFullDto(event);
         return eventFullDto;
     }
 
@@ -260,7 +260,7 @@ public class EventServiceImpl implements EventService {
         if (views.length == 0) {
             event.setViews(0L);
         } else {
-            event.setViews(views[0].getHits());
+            event.setViews((long)views.length);
         }
     }
 }
