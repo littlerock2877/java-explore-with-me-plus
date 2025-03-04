@@ -13,6 +13,7 @@ import ru.practicum.main_service.event.dto.EventShortDto;
 import ru.practicum.main_service.event.enums.EventSort;
 import ru.practicum.main_service.event.service.EventService;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
@@ -53,11 +54,12 @@ public class EventPublicController {
     }
 
     private void saveHit(HttpServletRequest request) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         EndpointHitDto hit = new EndpointHitDto();
         hit.setApp("main-service");
         hit.setUri(request.getRequestURI());
         hit.setIp(request.getRemoteAddr());
-        hit.setTimestamp(LocalDateTime.now().toString());
+        hit.setTimestamp(LocalDateTime.now().format(formatter));
         restStatClient.saveHit(hit);
     }
 }
