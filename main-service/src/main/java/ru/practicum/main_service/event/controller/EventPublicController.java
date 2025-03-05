@@ -12,8 +12,9 @@ import ru.practicum.main_service.event.dto.EventRequestParam;
 import ru.practicum.main_service.event.dto.EventShortDto;
 import ru.practicum.main_service.event.enums.EventSort;
 import ru.practicum.main_service.event.service.EventService;
+import ru.practicum.main_service.utility.Constants;
+
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
@@ -28,8 +29,8 @@ public class EventPublicController {
     public List<EventShortDto> publicGetEvents(@RequestParam(required = false) String text,
                                                @RequestParam(required = false) List<Integer> categories,
                                                @RequestParam(required = false) Boolean paid,
-                                               @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
-                                               @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
+                                               @RequestParam(required = false) @DateTimeFormat(pattern = Constants.DATE_TIME_PATTERN) LocalDateTime rangeStart,
+                                               @RequestParam(required = false) @DateTimeFormat(pattern = Constants.DATE_TIME_PATTERN) LocalDateTime rangeEnd,
                                                @RequestParam(defaultValue = "false") Boolean onlyAvailable,
                                                @RequestParam(required = false) EventSort sort,
                                                @RequestParam(defaultValue = "0") Integer from,
@@ -54,12 +55,11 @@ public class EventPublicController {
     }
 
     private void saveHit(HttpServletRequest request) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         EndpointHitDto hit = new EndpointHitDto();
         hit.setApp("main-service");
         hit.setUri(request.getRequestURI());
         hit.setIp(request.getRemoteAddr());
-        hit.setTimestamp(LocalDateTime.now().format(formatter));
+        hit.setTimestamp(LocalDateTime.now().format(Constants.DATE_TIME_FORMATTER));
         restStatClient.saveHit(hit);
     }
 }

@@ -1,11 +1,9 @@
 package ru.practicum.main_service.request.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import java.util.List;
 
-@Getter
-@Setter
+@Data
 public class EventRequestStatusUpdateResult {
     private List<ParticipationRequestDto> confirmedRequests;
     private List<ParticipationRequestDto> rejectedRequests;

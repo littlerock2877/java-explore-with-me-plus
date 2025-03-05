@@ -19,8 +19,8 @@ public class UserAdminController {
 
     @GetMapping
     public List<UserDto> getUsers(@RequestParam(required = false) List<Integer> ids,
-                                  @RequestParam(required = false, defaultValue = "0") Integer from,
-                                  @RequestParam(required = false, defaultValue = "10") Integer size) {
+                                  @RequestParam(defaultValue = "0") Integer from,
+                                  @RequestParam(defaultValue = "10") Integer size) {
         log.info("Getting users with ids {} - Started", ids);
         AdminUserParam userParam = new AdminUserParam(ids, from, size);
         List<UserDto> users = userService.getUsers(userParam);
