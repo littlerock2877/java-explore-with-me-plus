@@ -21,24 +21,24 @@ public class EventMapper {
     private final UserMapper userMapper;
 
     public EventFullDto toEventFullDto(Event event) {
-        return new EventFullDto(
-                event.getId(),
-                event.getAnnotation(),
-                categoryMapper.toCategoryDto(event.getCategory()),
-                event.getConfirmedRequests(),
-                event.getEventDate(),
-                userMapper.toUserShortDto(event.getInitiator()),
-                event.getPaid(),
-                event.getTitle(),
-                event.getViews(),
-                event.getCreatedOn(),
-                event.getDescription(),
-                event.getLocation(),
-                event.getParticipantLimit(),
-                event.getPublishedOn(),
-                event.getRequestModeration(),
-                event.getState()
-                );
+        return EventFullDto.builder()
+                .id(event.getId())
+                .annotation(event.getAnnotation())
+                .category(categoryMapper.toCategoryDto(event.getCategory()))
+                .confirmedRequests(event.getConfirmedRequests())
+                .eventDate(event.getEventDate())
+                .initiator(userMapper.toUserShortDto(event.getInitiator()))
+                .paid(event.getPaid())
+                .title(event.getTitle())
+                .views(event.getViews())
+                .createdOn(event.getCreatedOn())
+                .description(event.getDescription())
+                .location(event.getLocation())
+                .participantLimit(event.getParticipantLimit())
+                .publishedOn(event.getPublishedOn())
+                .requestModeration(event.getRequestModeration())
+                .state(event.getState())
+                .build();
     }
 
     public Event toModelByNew(NewEventDto newEventDto, Category category, User initiator) {

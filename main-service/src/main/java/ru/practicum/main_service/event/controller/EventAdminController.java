@@ -10,6 +10,7 @@ import ru.practicum.main_service.event.dto.AdminEventParams;
 import ru.practicum.main_service.event.dto.EventFullDto;
 import ru.practicum.main_service.event.dto.UpdateEventAdminRequest;
 import ru.practicum.main_service.event.service.EventService;
+import ru.practicum.main_service.utility.Constants;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,10 +27,10 @@ public class EventAdminController {
     public List<EventFullDto> adminGetEvents(@RequestParam(required = false) List<Integer> users,
                                              @RequestParam(required = false) List<String> states,
                                              @RequestParam(required = false) List<Integer> categories,
-                                             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
-                                             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
-                                             @RequestParam(required = false, defaultValue = "0") Integer from,
-                                             @RequestParam(required = false, defaultValue = "10") Integer size) {
+                                             @RequestParam(required = false) @DateTimeFormat(pattern = Constants.DATE_TIME_PATTERN) LocalDateTime rangeStart,
+                                             @RequestParam(required = false) @DateTimeFormat(pattern = Constants.DATE_TIME_PATTERN) LocalDateTime rangeEnd,
+                                             @RequestParam(defaultValue = "0") Integer from,
+                                             @RequestParam(defaultValue = "10") Integer size) {
         AdminEventParams adminEventParams = new AdminEventParams(users, states, categories, rangeStart, rangeEnd, from, size);
         log.info("Getting events with params {} - Started", adminEventParams);
         List<EventFullDto> events = eventService.adminGetAllEvents(adminEventParams);
