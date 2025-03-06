@@ -4,11 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.ViewStatsDto;
+import ru.practicum.stat_server.exception.EventDateValidationException;
 import ru.practicum.stat_server.mapper.HitMapper;
 import ru.practicum.stat_server.mapper.ViewStatsMapper;
 import ru.practicum.stat_server.repository.StatRepository;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -23,20 +22,21 @@ public class StatServiceImpl implements StatService {
     @Override
     public List<ViewStatsDto> getStats(String start, String end, List<String> uris, Boolean unique) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        try {
-            LocalDateTime startDateTime = LocalDateTime.parse(URLDecoder.decode(start, StandardCharsets.UTF_8.toString()), formatter);
-            LocalDateTime endDateTime = LocalDateTime.parse(URLDecoder.decode(end, StandardCharsets.UTF_8.toString()), formatter);
-            if (unique && uris != null) {
-                return statsMapper.toDtoList(statRepository.findDistinctViews(startDateTime, endDateTime, uris));
-            } else if (unique) {
-                return statsMapper.toDtoList(statRepository.findDistinctViews(startDateTime, endDateTime));
-            } else if (uris != null) {
-                return statsMapper.toDtoList(statRepository.findViews(startDateTime, endDateTime, uris));
-            } else {
-                return statsMapper.toDtoList(statRepository.findViews(startDateTime, endDateTime));
-            }
-        } catch (Exception e) {
-            throw new IllegalArgumentException(e.getMessage());
+        LocalDateTime startDateTime = LocalDateTime.parse(start, formatter);
+        LocalDateTime endDateTime = LocalDateTime.parse(end, formatter);
+
+        if (startDateTime.isAfter(endDateTime)) {
+            throw new EventDateValidationException("Start date should be before end");
+        }
+
+        if (unique && uris != null) {
+            return statsMapper.toDtoList(statRepository.findDistinctViews(startDateTime, endDateTime, uris));
+        } else if (unique) {
+            return statsMapper.toDtoList(statRepository.findDistinctViews(startDateTime, endDateTime));
+        } else if (uris != null) {
+            return statsMapper.toDtoList(statRepository.findViews(startDateTime, endDateTime, uris));
+        } else {
+            return statsMapper.toDtoList(statRepository.findViews(startDateTime, endDateTime));
         }
     }
 
