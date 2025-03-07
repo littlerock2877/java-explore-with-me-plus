@@ -58,3 +58,10 @@ CREATE TABLE IF NOT EXISTS requests
     requester INTEGER REFERENCES users(id) ON DELETE CASCADE NOT NULL,
     status varchar(25) NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS likes
+(
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+    event_id INTEGER REFERENCES events(id) ON DELETE CASCADE NOT NULL,
+    PRIMARY KEY (user_id, event_id)
+);
