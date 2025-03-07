@@ -25,4 +25,8 @@ public interface EventService {
     List<EventShortDto> publicGetAllEvents(EventRequestParam eventRequestParam);
 
     EventFullDto publicGetEvent(Integer eventId);
+
+    long addLike(Integer userId, Integer eventId);
+
+    long removeLike(Integer userId, Integer eventId);
 }

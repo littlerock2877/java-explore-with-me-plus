@@ -6,6 +6,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.main_service.categories.model.Category;
 import ru.practicum.main_service.categories.repository.CategoryRepository;
@@ -15,7 +16,9 @@ import ru.practicum.main_service.event.enums.StateActionForAdmin;
 import ru.practicum.main_service.event.enums.StateActionForUser;
 import ru.practicum.main_service.event.mapper.EventMapper;
 import ru.practicum.main_service.event.model.Event;
+import ru.practicum.main_service.event.model.Like;
 import ru.practicum.main_service.event.repository.EventRepository;
+import ru.practicum.main_service.event.repository.LikeRepository;
 import ru.practicum.main_service.event.repository.LocationRepository;
 import ru.practicum.main_service.exception.EventDateValidationException;
 import ru.practicum.main_service.exception.NotFoundException;
@@ -33,6 +36,7 @@ public class EventServiceImpl implements EventService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final LocationRepository locationRepository;
+    private final LikeRepository likeRepository;
     private final EventMapper eventMapper;
     private final RestStatClient restStatClient;
     private static final String START = "1970-01-01 00:00:00";
@@ -244,15 +248,33 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventFullDto publicGetEvent(Integer eventId) {
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException(String.format("Event with id=%d was not found", eventId)));
-
-        if (event.getState() != EventState.PUBLISHED) {
-            throw new NotFoundException(String.format("Event with id=%d was not published", eventId));
-        }
+        Event event = getEvent(eventId);
         addViews("/events/" + event.getId(), event);
         EventFullDto eventFullDto = eventMapper.toEventFullDto(event);
         return eventFullDto;
+    }
+
+    @Override
+    @Transactional
+    public long addLike(Integer userId, Integer eventId) {
+        User user = getUser(userId);
+        Event event = getEvent(eventId);
+
+        if (!likeRepository.existsByUserIdAndEventId(userId, eventId)) {
+            Like like = new Like(user, event);
+            likeRepository.save(like);
+        }
+        return likeRepository.countByEventId(eventId);
+    }
+
+    @Override
+    @Transactional
+    public long removeLike(Integer userId, Integer eventId) {
+        if (likeRepository.existsByUserIdAndEventId(userId, eventId)) {
+            likeRepository.deleteByUserIdAndEventId(userId, eventId);
+        }
+
+        return likeRepository.countByEventId(eventId);
     }
 
     private void addViews(String uri, Event event) {
@@ -262,5 +284,20 @@ public class EventServiceImpl implements EventService {
         } else {
             event.setViews((long)views.length);
         }
+    }
+
+    private User getUser(Integer userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(String.format("User with id=%d was not found", userId)));
+    }
+
+    private Event getEvent(Integer eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException(String.format("Event with id=%d was not found", eventId)));
+
+        if (event.getState() != EventState.PUBLISHED) {
+            throw new NotFoundException(String.format("Event with id=%d was not published", eventId));
+        }
+        return event;
     }
 }
