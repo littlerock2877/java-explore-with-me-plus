@@ -273,7 +273,6 @@ public class EventServiceImpl implements EventService {
         if (likeRepository.existsByUserIdAndEventId(userId, eventId)) {
             likeRepository.deleteByUserIdAndEventId(userId, eventId);
         }
-
         return likeRepository.countByEventId(eventId);
     }
 
