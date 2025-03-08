@@ -29,4 +29,6 @@ public interface EventService {
     long addLike(Integer userId, Integer eventId);
 
     long removeLike(Integer userId, Integer eventId);
+
+    List<EventFullDto> adminGetEventsLikedByUser(Integer userId);
 }

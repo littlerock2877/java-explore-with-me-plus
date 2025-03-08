@@ -204,6 +204,20 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public List<EventFullDto> adminGetEventsLikedByUser(Integer userId) {
+        User user = getUser(userId);
+        List<Like> likes = likeRepository.findAllByUserId(userId);
+        if (likes.isEmpty()) {
+            throw new NotFoundException(String.format("User with id=%d did not like any events", userId));
+        }
+        List<Integer> eventIds = likes.stream()
+                .map(Like::getEvent)
+                .map(Event::getId)
+                .toList();
+        return eventMapper.toEventFullDto(eventRepository.findAllById(eventIds));
+    }
+
+    @Override
     public List<EventShortDto> publicGetAllEvents(EventRequestParam eventRequestParam) {
         Pageable page = PageRequest.of(eventRequestParam.getFrom() / eventRequestParam.getSize(), eventRequestParam.getSize());
 
