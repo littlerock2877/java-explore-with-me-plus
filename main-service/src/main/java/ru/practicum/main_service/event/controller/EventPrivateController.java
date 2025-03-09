@@ -94,6 +94,7 @@ public class EventPrivateController {
     }
 
     @DeleteMapping("/{eventId}/like")
+    @ResponseStatus(HttpStatus.GONE)
     public Long removeLike(@PathVariable(name = "eventId") Integer eventId,
                            @PathVariable(name = "userId") Integer userId) {
         log.info("Removing like from event with id {} from user with id {} - Started", eventId, userId);
