@@ -6,7 +6,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.main_service.categories.model.Category;
 import ru.practicum.main_service.categories.repository.CategoryRepository;
@@ -22,6 +21,8 @@ import ru.practicum.main_service.event.repository.LikeRepository;
 import ru.practicum.main_service.event.repository.LocationRepository;
 import ru.practicum.main_service.exception.EventDateValidationException;
 import ru.practicum.main_service.exception.NotFoundException;
+import ru.practicum.main_service.user.dto.UserShortDto;
+import ru.practicum.main_service.user.mapper.UserMapper;
 import ru.practicum.main_service.user.model.User;
 import ru.practicum.main_service.user.repository.UserRepository;
 import java.security.InvalidParameterException;
@@ -35,6 +36,7 @@ public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
     private final LocationRepository locationRepository;
     private final LikeRepository likeRepository;
     private final EventMapper eventMapper;
@@ -269,8 +271,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    @Transactional
-    public long addLike(Integer userId, Integer eventId) {
+    public Long addLike(Integer userId, Integer eventId) {
         User user = getUser(userId);
         Event event = getEvent(eventId);
 
@@ -282,12 +283,19 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    @Transactional
-    public long removeLike(Integer userId, Integer eventId) {
+    public Long removeLike(Integer userId, Integer eventId) {
         if (likeRepository.existsByUserIdAndEventId(userId, eventId)) {
             likeRepository.deleteByUserIdAndEventId(userId, eventId);
         }
         return likeRepository.countByEventId(eventId);
+    }
+
+    @Override
+    public List<UserShortDto> getLikedUsers(Integer eventId) {
+        Event event = getEvent(eventId);
+        addViews("/events/" + event.getId(), event);
+        List<Like> likes = likeRepository.findAllByEventId(eventId);
+        return likes.stream().map(like -> userMapper.toUserShortDto(like.getUser())).toList();
     }
 
     private List<Integer> getEventIdsLikedByUser(Integer userId) {
