@@ -43,6 +43,14 @@ public class EventPrivateController {
         return events;
     }
 
+    @GetMapping("/like")
+    public List<EventShortDto> getAllLikedEvents(@PathVariable Integer userId) {
+        log.info("Getting all liked events for user with id {} - Started", userId);
+        List<EventShortDto> events = eventService.getAllLikedEvents(userId);
+        log.info("Getting all liked events for user with id {} - Finished", userId);
+        return events;
+    }
+
     @GetMapping("/{eventId}")
     public EventFullDto getEventFullInformation(@PathVariable Integer userId, @PathVariable Integer eventId) {
         log.info("Getting event with id {} by user with id {} - Started", eventId, userId);
