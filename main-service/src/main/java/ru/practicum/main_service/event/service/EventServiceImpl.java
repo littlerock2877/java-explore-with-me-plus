@@ -206,6 +206,20 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public List<EventFullDto> adminGetEventsLikedByUser(Integer userId) {
+        List<Integer> eventIds = getEventIdsLikedByUser(userId);
+        return eventMapper.toEventFullDto(eventRepository.findAllById(eventIds));
+    }
+
+    @Override
+    public List<EventShortDto> getAllLikedEvents(Integer userId) {
+        List<Integer> eventIds = getEventIdsLikedByUser(userId);
+        return eventRepository.findAllById(eventIds).stream()
+                .map(eventMapper::toEventShortDto)
+                .toList();
+    }
+
+    @Override
     public List<EventShortDto> publicGetAllEvents(EventRequestParam eventRequestParam) {
         Pageable page = PageRequest.of(eventRequestParam.getFrom() / eventRequestParam.getSize(), eventRequestParam.getSize());
 
@@ -282,6 +296,18 @@ public class EventServiceImpl implements EventService {
         addViews("/events/" + event.getId(), event);
         List<Like> likes = likeRepository.findAllByEventId(eventId);
         return likes.stream().map(like -> userMapper.toUserShortDto(like.getUser())).toList();
+    }
+
+    private List<Integer> getEventIdsLikedByUser(Integer userId) {
+        User user = getUser(userId);
+        List<Like> likes = likeRepository.findAllByUserId(userId);
+        if (likes.isEmpty()) {
+            throw new NotFoundException(String.format("User with id=%d did not like any events", userId));
+        }
+        return likes.stream()
+                .map(Like::getEvent)
+                .map(Event::getId)
+                .toList();
     }
 
     private void addViews(String uri, Event event) {

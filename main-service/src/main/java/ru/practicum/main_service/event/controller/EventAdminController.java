@@ -46,4 +46,12 @@ public class EventAdminController {
         log.info("Updating event {} - Finished", eventId);
         return event;
     }
+
+    @GetMapping("/{userId}/like")
+    public List<EventFullDto> adminGetEventsLikedByUser(@PathVariable("userId") Integer userId) {
+        log.info("Getting events by {} - Started", userId);
+        List<EventFullDto> events = eventService.adminGetEventsLikedByUser(userId);
+        log.info("Getting events by {} - Finished", userId);
+        return events;
+    }
 }
