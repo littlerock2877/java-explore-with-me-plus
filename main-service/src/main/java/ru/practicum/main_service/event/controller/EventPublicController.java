@@ -56,8 +56,7 @@ public class EventPublicController {
     }
 
     @GetMapping("/{eventId}/likes")
-    public List<UserShortDto> publicGetLikedUsers(@PathVariable("eventId") Integer eventId, HttpServletRequest request)
-    {
+    public List<UserShortDto> publicGetLikedUsers(@PathVariable("eventId") Integer eventId, HttpServletRequest request) {
         log.info("Getting liked users for event with id {} - Started", eventId);
         saveHit(request);
         List<UserShortDto> likedUsers = eventService.getLikedUsers(eventId);
