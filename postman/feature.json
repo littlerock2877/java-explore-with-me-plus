@@ -950,8 +950,7 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Ответ должен содержать код статуса 410 и данные в формате json\", function(){\r",
-									"    pm.response.to.be.gone;    \r",
-									"    pm.response.to.be.withBody;\r",
+									"    pm.response.to.have.status(410);    \r",
 									"    pm.response.to.be.json;\r",
 									"})"
 								],
