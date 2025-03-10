@@ -43,6 +43,14 @@ public class EventPrivateController {
         return events;
     }
 
+    @GetMapping("/like")
+    public List<EventShortDto> getAllLikedEvents(@PathVariable Integer userId) {
+        log.info("Getting all liked events for user with id {} - Started", userId);
+        List<EventShortDto> events = eventService.getAllLikedEvents(userId);
+        log.info("Getting all liked events for user with id {} - Finished", userId);
+        return events;
+    }
+
     @GetMapping("/{eventId}")
     public EventFullDto getEventFullInformation(@PathVariable Integer userId, @PathVariable Integer eventId) {
         log.info("Getting event with id {} by user with id {} - Started", eventId, userId);
@@ -74,5 +82,24 @@ public class EventPrivateController {
         EventRequestStatusUpdateResult updated = requestService.updateRequests(userId, eventId, requestStatusUpdateRequest);
         log.info("Updating requests for event with id {} by user with id {} - Finished", eventId, userId);
         return updated;
+    }
+
+    @PostMapping("/{eventId}/like")
+    public Long addLike(@PathVariable(name = "eventId") Integer eventId,
+                        @PathVariable(name = "userId") Integer userId) {
+        log.info("Adding like to event with id {} from user with id {} - Started", eventId, userId);
+        long likeCount = eventService.addLike(userId, eventId);
+        log.info("Adding like to event with id {} from user with id {} - Finished", eventId, userId);
+        return likeCount;
+    }
+
+    @DeleteMapping("/{eventId}/like")
+    @ResponseStatus(HttpStatus.GONE)
+    public Long removeLike(@PathVariable(name = "eventId") Integer eventId,
+                           @PathVariable(name = "userId") Integer userId) {
+        log.info("Removing like from event with id {} from user with id {} - Started", eventId, userId);
+        long likeCount = eventService.removeLike(userId, eventId);
+        log.info("Removing like from event with id {} from user with id {} - Finished", eventId, userId);
+        return likeCount;
     }
 }

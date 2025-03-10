@@ -15,10 +15,14 @@ import ru.practicum.main_service.event.enums.StateActionForAdmin;
 import ru.practicum.main_service.event.enums.StateActionForUser;
 import ru.practicum.main_service.event.mapper.EventMapper;
 import ru.practicum.main_service.event.model.Event;
+import ru.practicum.main_service.event.model.Like;
 import ru.practicum.main_service.event.repository.EventRepository;
+import ru.practicum.main_service.event.repository.LikeRepository;
 import ru.practicum.main_service.event.repository.LocationRepository;
 import ru.practicum.main_service.exception.EventDateValidationException;
 import ru.practicum.main_service.exception.NotFoundException;
+import ru.practicum.main_service.user.dto.UserShortDto;
+import ru.practicum.main_service.user.mapper.UserMapper;
 import ru.practicum.main_service.user.model.User;
 import ru.practicum.main_service.user.repository.UserRepository;
 import java.security.InvalidParameterException;
@@ -32,7 +36,9 @@ public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
     private final LocationRepository locationRepository;
+    private final LikeRepository likeRepository;
     private final EventMapper eventMapper;
     private final RestStatClient restStatClient;
     private static final String START = "1970-01-01 00:00:00";
@@ -200,6 +206,20 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public List<EventFullDto> adminGetEventsLikedByUser(Integer userId) {
+        List<Integer> eventIds = getEventIdsLikedByUser(userId);
+        return eventMapper.toEventFullDto(eventRepository.findAllById(eventIds));
+    }
+
+    @Override
+    public List<EventShortDto> getAllLikedEvents(Integer userId) {
+        List<Integer> eventIds = getEventIdsLikedByUser(userId);
+        return eventRepository.findAllById(eventIds).stream()
+                .map(eventMapper::toEventShortDto)
+                .toList();
+    }
+
+    @Override
     public List<EventShortDto> publicGetAllEvents(EventRequestParam eventRequestParam) {
         Pageable page = PageRequest.of(eventRequestParam.getFrom() / eventRequestParam.getSize(), eventRequestParam.getSize());
 
@@ -244,15 +264,50 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventFullDto publicGetEvent(Integer eventId) {
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException(String.format("Event with id=%d was not found", eventId)));
-
-        if (event.getState() != EventState.PUBLISHED) {
-            throw new NotFoundException(String.format("Event with id=%d was not published", eventId));
-        }
+        Event event = getEvent(eventId);
         addViews("/events/" + event.getId(), event);
         EventFullDto eventFullDto = eventMapper.toEventFullDto(event);
         return eventFullDto;
+    }
+
+    @Override
+    public Long addLike(Integer userId, Integer eventId) {
+        User user = getUser(userId);
+        Event event = getEvent(eventId);
+
+        if (!likeRepository.existsByUserIdAndEventId(userId, eventId)) {
+            Like like = new Like(user, event);
+            likeRepository.save(like);
+        }
+        return likeRepository.countByEventId(eventId);
+    }
+
+    @Override
+    public Long removeLike(Integer userId, Integer eventId) {
+        if (likeRepository.existsByUserIdAndEventId(userId, eventId)) {
+            likeRepository.deleteByUserIdAndEventId(userId, eventId);
+        }
+        return likeRepository.countByEventId(eventId);
+    }
+
+    @Override
+    public List<UserShortDto> getLikedUsers(Integer eventId) {
+        Event event = getEvent(eventId);
+        addViews("/events/" + event.getId(), event);
+        List<Like> likes = likeRepository.findAllByEventId(eventId);
+        return likes.stream().map(like -> userMapper.toUserShortDto(like.getUser())).toList();
+    }
+
+    private List<Integer> getEventIdsLikedByUser(Integer userId) {
+        User user = getUser(userId);
+        List<Like> likes = likeRepository.findAllByUserId(userId);
+        if (likes.isEmpty()) {
+            throw new NotFoundException(String.format("User with id=%d did not like any events", userId));
+        }
+        return likes.stream()
+                .map(Like::getEvent)
+                .map(Event::getId)
+                .toList();
     }
 
     private void addViews(String uri, Event event) {
@@ -262,5 +317,20 @@ public class EventServiceImpl implements EventService {
         } else {
             event.setViews((long)views.length);
         }
+    }
+
+    private User getUser(Integer userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(String.format("User with id=%d was not found", userId)));
+    }
+
+    private Event getEvent(Integer eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException(String.format("Event with id=%d was not found", eventId)));
+
+        if (event.getState() != EventState.PUBLISHED) {
+            throw new NotFoundException(String.format("Event with id=%d was not published", eventId));
+        }
+        return event;
     }
 }
